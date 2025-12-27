@@ -87,6 +87,12 @@
             android:text="micakamiondzija@gmail.com"/>
 
         <EditText
+            android:hint="Adresa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-Petra Dobrivića 16"/>
+
+        <EditText
             android:hint="Telefon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
