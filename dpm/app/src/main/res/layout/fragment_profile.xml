@@ -4,11 +4,38 @@
     android:layout_height="match_parent"
     android:background="@color/light_blue">
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
+
+        <!-- TIP KORISNIKA -->
+        <RadioGroup
+            android:id="@+id/rgUserType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center_horizontal">
+
+            <RadioButton
+                android:id="@+id/rbDriver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vozač"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/rbUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Korisnik"
+                android:layout_marginStart="16dp"/>
+
+        </RadioGroup>
+
 
         <!-- PROFILNA SLIKA + DUGMAD -->
         <LinearLayout
@@ -99,56 +126,77 @@
             android:text="+381612132104"/>
 
         <!-- VOZAČ INFO -->
-        <TextView
-            android:text="Vozač"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="@color/dark_blue"
-            android:layout_marginTop="24dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:text="Aktivan 5 sati u poslednja 24h"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:text="Vozilo"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:text="Marka: Toyota"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView
-            android:text="Model: Corolla"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView
-            android:text="Registracija: BG-123-AB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <!-- ADMIN ODOBRENJE -->
-        <TextView
-            android:text="Izmene čekaju odobrenje administratora"
-            android:textColor="@color/orange"
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <Button
-            android:id="@+id/btnRequestChange"
+        <LinearLayout
+            android:id="@+id/layoutDriverInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pošalji zahtev za izmenu"
+            android:orientation="vertical">
+
+            <TextView
+                android:text="Vozač"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="@color/dark_blue"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:text="Aktivan 5 sati u poslednja 24h"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:text="Vozilo"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:text="Marka: Toyota"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:text="Model: Corolla"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:text="Registracija: BG-123-AB"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+
+            <!-- ADMIN ODOBRENJE -->
+            <TextView
+                android:text="Izmene čekaju odobrenje administratora"
+                android:textColor="@color/orange"
+                android:layout_marginTop="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:id="@+id/btnRequestChange"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pošalji zahtev za izmenu"
+                android:backgroundTint="@color/dark_blue"
+                android:textColor="@color/white"
+                android:layout_marginTop="8dp"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSaveChanges"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sačuvaj izmene"
             android:backgroundTint="@color/dark_blue"
             android:textColor="@color/white"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/btnChangePassword"

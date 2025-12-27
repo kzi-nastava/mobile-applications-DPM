@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 
 import androidx.fragment.app.Fragment;
 
@@ -17,7 +19,29 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        RadioGroup rgUserType = view.findViewById(R.id.rgUserType);
+        LinearLayout driverLayout = view.findViewById(R.id.layoutDriverInfo);
+        Button btnSaveChanges = view.findViewById(R.id.btnSaveChanges);
+
+        // Po defaultu je Vozač čekiran → prikazano
+        driverLayout.setVisibility(View.VISIBLE);
+
+        rgUserType.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rbUser) {
+                // Korisnik
+                driverLayout.setVisibility(View.GONE);
+                btnSaveChanges.setVisibility(View.VISIBLE);
+            } else if (checkedId == R.id.rbDriver) {
+                // Vozač
+                driverLayout.setVisibility(View.VISIBLE);
+                btnSaveChanges.setVisibility(View.GONE);
+            }
+        });
+
+        return view;
     }
 
     @Override
