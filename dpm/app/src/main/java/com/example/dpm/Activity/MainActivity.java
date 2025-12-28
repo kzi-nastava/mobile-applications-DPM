@@ -1,21 +1,18 @@
-package com.example.dpm;
+package com.example.dpm.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.example.dpm.Fragment.DriveHistoryFragment;
+import com.example.dpm.LoginActivity;
+import com.example.dpm.ProfileFragment;
+import com.example.dpm.R;
+import com.example.dpm.RegisterActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -38,9 +35,26 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+
         toolbar.setNavigationOnClickListener(v ->
                 drawerLayout.openDrawer(GravityCompat.START)
         );
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+
+            if (item.getItemId() == R.id.nav_history) {
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace( R.id.frameLayout, new DriveHistoryFragment())
+                        .commit();
+
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            }
+
+            return false;
+        });
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
@@ -54,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             if (selectedFragment != null) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.frameLayout2, selectedFragment)
+                        .replace(R.id.frameLayout, selectedFragment)
                         .commit();
                 return true;
             }
