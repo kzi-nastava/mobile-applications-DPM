@@ -1,4 +1,4 @@
-package com.example.dpm;
+package com.example.dpm.Fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +9,8 @@ import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 
 import androidx.fragment.app.Fragment;
+
+import com.example.dpm.R;
 
 public class ProfileFragment extends Fragment {
 
@@ -50,7 +52,7 @@ public class ProfileFragment extends Fragment {
         btnChangePassword.setOnClickListener(v -> {
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.frameLayout2, new ChangePasswordFragment())
+                    .replace(R.id.frameLayout, new ChangePasswordFragment())
                     .addToBackStack(null) // da može nazad dugme
                     .commit();
         });

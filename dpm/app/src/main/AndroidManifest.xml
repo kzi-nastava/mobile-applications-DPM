@@ -20,10 +20,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LoginActivity" />
-        <activity android:name=".RegisterActivity" />
-        <activity android:name=".ResetPasswordActivity" />
-        <activity android:name=".ActivationPendingActivity" />
+        <activity android:name=".Activity.LoginActivity" />
+        <activity android:name=".Activity.RegisterActivity" />
+        <activity android:name=".Activity.ResetPasswordActivity" />
+        <activity android:name=".Activity.ActivationPendingActivity" />
     </application>
 
 </manifest>

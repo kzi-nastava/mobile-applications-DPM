@@ -9,10 +9,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.example.dpm.Fragment.DriveHistoryFragment;
-import com.example.dpm.LoginActivity;
-import com.example.dpm.ProfileFragment;
+import com.example.dpm.Fragment.ProfileFragment;
 import com.example.dpm.R;
-import com.example.dpm.RegisterActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -40,21 +38,6 @@ public class MainActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START)
         );
 
-        navigationView.setNavigationItemSelectedListener(item -> {
-
-            if (item.getItemId() == R.id.nav_history) {
-
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace( R.id.frameLayout, new DriveHistoryFragment())
-                        .commit();
-
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            }
-
-            return false;
-        });
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
@@ -82,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.nav_register) {
                 startActivity(new Intent(this, RegisterActivity.class));
+            }
+            if (item.getItemId() == R.id.nav_history) {
+                getSupportFragmentManager().beginTransaction().replace( R.id.frameLayout, new DriveHistoryFragment()).commit();
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
