@@ -1,4 +1,4 @@
-package com.example.dpm;
+package com.example.dpm.Activity;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.dpm.R;
 
 public class RegisterActivity extends AppCompatActivity {
 

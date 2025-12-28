@@ -1,10 +1,12 @@
-package com.example.dpm;
+package com.example.dpm.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.dpm.R;
 
 public class ActivationPendingActivity extends AppCompatActivity {
 
