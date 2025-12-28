@@ -24,14 +24,14 @@
                 android:id="@+id/rbDriver"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Vozač"
+                android:text="Driver"
                 android:checked="true"/>
 
             <RadioButton
                 android:id="@+id/rbUser"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Korisnik"
+                android:text="User"
                 android:layout_marginStart="16dp"/>
 
         </RadioGroup>
@@ -69,7 +69,7 @@
                     android:id="@+id/btnAddImage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Dodaj sliku"
+                    android:text="Add a profile image"
                     android:backgroundTint="@color/dark_blue"
                     android:textColor="@color/white"
                     android:layout_marginBottom="8dp"/>
@@ -78,7 +78,7 @@
                     android:id="@+id/btnChangeImage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Promeni sliku"
+                    android:text="Change profile image"
                     android:backgroundTint="@color/orange"
                     android:textColor="@color/white"/>
 
@@ -87,7 +87,7 @@
         </LinearLayout>
 
         <TextView
-            android:text="Lični podaci"
+            android:text="User data"
             android:textStyle="bold"
             android:textSize="18sp"
             android:textColor="@color/dark_blue"
@@ -96,13 +96,13 @@
             android:layout_height="wrap_content" />
 
         <EditText
-            android:hint="Ime"
+            android:hint="Name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Miroslav"/>
 
         <EditText
-            android:hint="Prezime"
+            android:hint="Lastname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Đaković"/>
@@ -114,13 +114,13 @@
             android:text="micakamiondzija@gmail.com"/>
 
         <EditText
-            android:hint="Adresa"
+            android:hint="Address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="-Petra Dobrivića 16"/>
 
         <EditText
-            android:hint="Telefon"
+            android:hint="Phone number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="+381612132104"/>
@@ -133,7 +133,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:text="Vozač"
+                android:text="Driver"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textColor="@color/dark_blue"
@@ -142,19 +142,19 @@
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:text="Aktivan 5 sati u poslednja 24h"
+                android:text="Active for 5 hours in the last 24 hours"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
             <TextView
-                android:text="Vozilo"
+                android:text="Vehicle"
                 android:textStyle="bold"
                 android:layout_marginTop="8dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
             <TextView
-                android:text="Marka: Toyota"
+                android:text="Mark: Toyota"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -164,14 +164,14 @@
                 android:layout_height="wrap_content"/>
 
             <TextView
-                android:text="Registracija: BG-123-AB"
+                android:text="Registration: BG-123-AB"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
 
             <!-- ADMIN ODOBRENJE -->
             <TextView
-                android:text="Izmene čekaju odobrenje administratora"
+                android:text="Changes are pending admin approval"
                 android:textColor="@color/orange"
                 android:layout_marginTop="16dp"
                 android:layout_width="wrap_content"
@@ -181,7 +181,7 @@
                 android:id="@+id/btnRequestChange"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Pošalji zahtev za izmenu"
+                android:text="Submit a change request"
                 android:backgroundTint="@color/dark_blue"
                 android:textColor="@color/white"
                 android:layout_marginTop="8dp"/>
@@ -192,7 +192,7 @@
             android:id="@+id/btnSaveChanges"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Sačuvaj izmene"
+            android:text="Save changes"
             android:backgroundTint="@color/dark_blue"
             android:textColor="@color/white"
             android:layout_marginTop="8dp"
@@ -202,7 +202,7 @@
             android:id="@+id/btnChangePassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Promeni lozinku"
+            android:text="Change password"
             android:backgroundTint="@color/orange"
             android:textColor="@color/white"
             android:layout_marginTop="8dp"/>
