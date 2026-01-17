@@ -7,4 +7,6 @@
     <color name="orange_transparent">#99F4A261</color>
     <color name="dark_blue_transparent">#80293241</color>
     <color name="dark_blue">#293241</color>
+    <color name="green">#117512</color>
+    <color name="red">#A61810</color>
 </resources>

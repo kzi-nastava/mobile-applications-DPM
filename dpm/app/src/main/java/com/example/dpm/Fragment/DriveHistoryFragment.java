@@ -66,6 +66,7 @@ public class DriveHistoryFragment extends Fragment {
 
         DatePickerDialog dialog = new DatePickerDialog(
                 getContext(),
+                R.style.MyDatePickerDialog,
                 (view, year, month, day) -> {
 
                     String selectedDate = String.format(
