@@ -2,14 +2,17 @@ package com.example.dpm.Model;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class DriveHistory {
 
     public String id;
+    public String driverId;
     public String startTime;
     public String endTime;
     public String startLocation;

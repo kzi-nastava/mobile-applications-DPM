@@ -15,6 +15,7 @@ import com.example.dpm.Adapter.DriveHistoryAdapter;
 import com.example.dpm.Model.DriveHistory;
 import com.example.dpm.Model.Passenger;
 import com.example.dpm.R;
+import com.example.dpm.Repository.DriveHistoryRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,10 +25,11 @@ import java.util.Locale;
 
 public class DriveHistoryFragment extends Fragment {
     RecyclerView recyclerView;
-    Button btnPickDate;
+    Button btnPickDate, btnReset;
     List<DriveHistory> allDrives = new ArrayList<>();
     List<DriveHistory> filteredDrives = new ArrayList<>();
     DriveHistoryAdapter adapter;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -36,27 +38,37 @@ public class DriveHistoryFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerRides);
         btnPickDate = view.findViewById(R.id.btnPickDate);
+        btnReset = view.findViewById(R.id.btnReset);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // HARD-CODED DATA (kasnije menjaš iz baze)
-        allDrives.add(new DriveHistory("20.12.2025 10:00", "20.12.2025 10:30", "Airport", "Center", false, "-", 1500, false, Arrays.asList(
-                new Passenger("Petar", "Petrović"),
-                new Passenger("Marko", "Marković")
-        )));
-        allDrives.add(new DriveHistory("25.12.2025 12:00", "25.12.2025 12:15", "Mall", "Station", true, "PASSENGER", 0, false,  Arrays.asList(
-                new Passenger("Jovan", "Jovanović")
-        )));
-        allDrives.add(new DriveHistory("29.12.2025 23:30", "30.12.2025 01:45", "Novi Sad", "Belgrade", false, "-", 3200, true,  Arrays.asList(
-                new Passenger("Nikola", "Jokić")
-        )));
 
-        filteredDrives.addAll(allDrives);
+        filteredDrives.clear();
+        allDrives.clear();
 
         adapter = new DriveHistoryAdapter(filteredDrives);
         recyclerView.setAdapter(adapter);
 
+        DriveHistoryRepository driveHistoryRepository = new DriveHistoryRepository();
+
+        //promeniti sa driver1 na id ulogovanog korisnika za kt2
+        driveHistoryRepository.getDriveHistoryByDriver("driver1", drives -> {
+            if (drives != null) {
+                allDrives.addAll(drives);
+                filteredDrives.addAll(drives);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
         btnPickDate.setOnClickListener(v -> showDatePicker());
+
+        btnReset.setOnClickListener(v -> {
+            if (filteredDrives.size() != allDrives.size()) {
+                filteredDrives.clear();
+                filteredDrives.addAll(allDrives);
+                adapter.notifyDataSetChanged();
+            }
+        });
 
         return view;
     }
