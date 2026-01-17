@@ -12,8 +12,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dpm.Adapter.VehicleAdapter;
+import com.example.dpm.Model.DriveHistory;
+import com.example.dpm.Model.Driver;
+import com.example.dpm.Model.Passenger;
 import com.example.dpm.Model.Vehicle;
 import com.example.dpm.R;
+import com.example.dpm.Repository.DriveHistoryRepository;
+import com.example.dpm.Repository.DriverRepository;
 import com.example.dpm.Repository.VehicleRepository;
 
 import org.osmdroid.config.Configuration;
@@ -23,6 +28,7 @@ import org.osmdroid.views.overlay.Marker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class HomePageFragment extends Fragment {
 
@@ -41,6 +47,31 @@ public class HomePageFragment extends Fragment {
         );
         Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
         //vehicleRepository.seedVehicles();
+
+        DriverRepository driverRepo = new DriverRepository();
+        DriveHistoryRepository driveRepo = new DriveHistoryRepository();
+
+
+//        Driver driver1 = new Driver("driver1", "Marko", "Markovic");
+//        Driver driver2 = new Driver("driver2", "Jovana", "Jovanovic");
+//
+//        driverRepo.addDriver(driver1);
+//        driverRepo.addDriver(driver2);
+//
+//
+//        List<Passenger> passengers1 = List.of(new Passenger(UUID.randomUUID().toString(), "Petar", "Petrovic"));
+//        List<Passenger> passengers2 = List.of(new Passenger(UUID.randomUUID().toString(), "Milos", "Obilic"));
+//
+//        DriveHistory drive1 = new DriveHistory(UUID.randomUUID().toString(),"driver1", "17.01.2026 08:00", "17.01.2026 08:00", "Airport", "Arena", false, "", 500.0, false, passengers1);
+//        DriveHistory drive2 = new DriveHistory(UUID.randomUUID().toString(),"driver1", "12.01.2026 09:00", "12.01.2026 09:00", "Airport", "Station", false, "", 450.0, false, passengers2);
+//        DriveHistory drive3 = new DriveHistory(UUID.randomUUID().toString(),"driver1" ,"11.01.2026 23:00", "12.01.2026 01:00", "Arena", "Station", true, "Passenger", 0.0, false, passengers1);
+//        DriveHistory drive4 = new DriveHistory(UUID.randomUUID().toString(), "driver2","18.01.2026 11:00", "18.01.2026 11:00", "Station", "Airport", false, "", 600.0, true, passengers2);
+//
+//        driveRepo.addDriveHistory(drive1);
+//        driveRepo.addDriveHistory(drive2);
+//        driveRepo.addDriveHistory(drive3);
+//        driveRepo.addDriveHistory(drive4);
+
         return view;
     }
 

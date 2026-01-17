@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Passenger {
+public class Driver {
 
     public String id;
     public String firstName;
     public String lastName;
 
-    public Passenger(String firstName, String lastName) {
+    public Driver(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
     }
