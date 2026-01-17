@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dpm.Adapter.VehicleAdapter;
 import com.example.dpm.Model.Vehicle;
 import com.example.dpm.R;
+import com.example.dpm.Repository.VehicleRepository;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
@@ -27,14 +28,19 @@ public class HomePageFragment extends Fragment {
 
     private RecyclerView vehicleListRecycler;
     private VehicleAdapter vehicleAdapter;
+    private VehicleRepository vehicleRepository;
     private MapView map;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home_page, container, false);
 
-        Configuration.getInstance().setUserAgentValue(getContext().getPackageName());
-
+        Configuration.getInstance().load(
+                requireContext(),
+                requireContext().getSharedPreferences("osmdroid", 0)
+        );
+        Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
+        //vehicleRepository.seedVehicles();
         return view;
     }
 
@@ -47,44 +53,62 @@ public class HomePageFragment extends Fragment {
         map.getController().setZoom(13.0);
         map.getController().setCenter(new GeoPoint(44.7866, 20.4489));
 
-        // RecyclerView
+
         vehicleListRecycler = view.findViewById(R.id.vehicle_list);
         vehicleListRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        loadFakeVehicles();
+        vehicleRepository = new VehicleRepository();
+
+        loadVehicles();
     }
 
-    private void loadFakeVehicles() {
-        List<Vehicle> vehicles = new ArrayList<>();
-        vehicles.add(new Vehicle("VW Passat ", new GeoPoint(44.7870, 20.4500), false, "BG 123 RA"));
-        vehicles.add(new Vehicle("VW Sharan", new GeoPoint(44.7820, 20.4400), true, "BG 321 KL"));
+    private void loadVehicles() {
+        try {
+            vehicleRepository.getAllVehicles(vehicles -> {
+                try {
+                    for (Vehicle v : vehicles) {
+                        Marker marker = new Marker(map);
+                        marker.setPosition(v.getPosition());
+                        marker.setTitle(v.getName());
 
-        // Markeri na mapi
-        for (Vehicle v : vehicles) {
-            Marker marker = new Marker(map);
-            marker.setPosition(v.getPosition());
-            marker.setTitle(v.getName());
+                        int statusColor = v.isBusy() ?
+                                getResources().getColor(R.color.red) :
+                                getResources().getColor(R.color.green);
+                        String hexColor = String.format("#%06X", (0xFFFFFF & statusColor));
+                        marker.setSubDescription(
+                                "Plate: " + v.getPlateNumber() + "<br>" +
+                                        "Status: <font color='" + hexColor + "'>" +
+                                        (v.isBusy() ? "BUSY" : "FREE") + "</font>"
+                        );
 
-            int statusColor = v.isBusy() ?
-                    getResources().getColor(R.color.red) :
-                    getResources().getColor(R.color.green);
-            String hexColor = String.format("#%06X", (0xFFFFFF & statusColor));
-            marker.setSubDescription(
-                "Plate: " + v.getPlateNumber() + "<br>" +
-                "Status: <font color='" + hexColor + "'>" +
-                (v.isBusy() ? "BUSY" : "FREE") + "</font>"
-            );
+                        marker.setIcon(v.isBusy() ?
+                                getResources().getDrawable(R.drawable.location_red, null) :
+                                getResources().getDrawable(R.drawable.location_green, null));
+                        map.getOverlays().add(marker);
+                    }
+                    map.invalidate();
 
-            marker.setIcon(v.isBusy() ?
-                    getResources().getDrawable(R.drawable.location_red, null) :
-                    getResources().getDrawable(R.drawable.location_green, null));
-            map.getOverlays().add(marker);
+                    vehicleAdapter = new VehicleAdapter(vehicles);
+                    vehicleListRecycler.setAdapter(vehicleAdapter);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        map.invalidate();
 
-        // RecyclerView adapter
-        vehicleAdapter = new VehicleAdapter(vehicles);
-        vehicleListRecycler.setAdapter(vehicleAdapter);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        map.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        map.onPause();
     }
 }

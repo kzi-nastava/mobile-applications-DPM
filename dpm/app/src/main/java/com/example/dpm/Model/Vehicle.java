@@ -4,29 +4,32 @@ import com.google.android.gms.maps.model.LatLng;
 
 import org.osmdroid.util.GeoPoint;
 
-public class Vehicle {
-    private String name;
-    private GeoPoint position;
-    private boolean busy;
-    private String plateNumber;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    public Vehicle(String name, GeoPoint position, boolean busy, String plateNumber) {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Vehicle {
+
+    public String id;
+    public String name;
+    public double latitude;
+    public double longitude;
+    public boolean busy;
+    public String plateNumber;
+
+    public Vehicle(String name, double latitude, double longitude, boolean busy, String plateNumber) {
         this.name = name;
-        this.position = position;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.busy = busy;
         this.plateNumber = plateNumber;
     }
 
-    public String getName() {
-        return name;
-    }
-    public String getPlateNumber() {
-        return plateNumber;
-    }
     public GeoPoint getPosition() {
-        return position;
+        return new GeoPoint(latitude, longitude);
     }
-    public boolean isBusy() {
-        return busy;
-    }
+
 }
