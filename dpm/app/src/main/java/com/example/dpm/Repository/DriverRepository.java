@@ -12,7 +12,7 @@ public class DriverRepository {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public void addDriver(Driver driver) {
-        db.collection("drivers").document(driver.id).set(driver);
+        db.collection("drivers").document(driver.getId()).set(driver);
     }
 
     public void getAllDrivers(OnSuccessListener<List<Driver>> listener) {

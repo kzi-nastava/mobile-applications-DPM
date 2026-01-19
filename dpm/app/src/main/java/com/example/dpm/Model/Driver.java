@@ -7,14 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Driver {
+public class Driver extends User {
 
-    public String id;
-    public String firstName;
-    public String lastName;
+    private boolean available;
+    private double workingHoursLast24h;
+    private Vehicle vehicle;
 
-    public Driver(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
 }

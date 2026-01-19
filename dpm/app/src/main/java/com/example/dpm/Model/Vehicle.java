@@ -13,20 +13,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Vehicle {
 
-    public String id;
-    public String name;
-    public double latitude;
-    public double longitude;
-    public boolean busy;
-    public String plateNumber;
-
-    public Vehicle(String name, double latitude, double longitude, boolean busy, String plateNumber) {
-        this.name = name;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.busy = busy;
-        this.plateNumber = plateNumber;
-    }
+    private String id;
+    private String model;
+    private double latitude;
+    private double longitude;
+    private boolean busy;
+    private String plateNumber;
+    private int seats;
+    private boolean babyFriendly;
+    private boolean petFriendly;
 
     public GeoPoint getPosition() {
         return new GeoPoint(latitude, longitude);

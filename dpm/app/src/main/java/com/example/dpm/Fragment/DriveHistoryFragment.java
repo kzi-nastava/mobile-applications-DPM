@@ -11,14 +11,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.dpm.Adapter.DriveHistoryAdapter;
-import com.example.dpm.Model.DriveHistory;
-import com.example.dpm.Model.Passenger;
+import com.example.dpm.Adapter.RideAdapter;
+
+import com.example.dpm.Model.Ride;
 import com.example.dpm.R;
-import com.example.dpm.Repository.DriveHistoryRepository;
+import com.example.dpm.Repository.RideRepository;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -26,9 +25,9 @@ import java.util.Locale;
 public class DriveHistoryFragment extends Fragment {
     RecyclerView recyclerView;
     Button btnPickDate, btnReset;
-    List<DriveHistory> allDrives = new ArrayList<>();
-    List<DriveHistory> filteredDrives = new ArrayList<>();
-    DriveHistoryAdapter adapter;
+    List<Ride> allDrives = new ArrayList<>();
+    List<Ride> filteredDrives = new ArrayList<>();
+    RideAdapter adapter;
 
 
     @Override
@@ -46,13 +45,13 @@ public class DriveHistoryFragment extends Fragment {
         filteredDrives.clear();
         allDrives.clear();
 
-        adapter = new DriveHistoryAdapter(filteredDrives);
+        adapter = new RideAdapter(filteredDrives);
         recyclerView.setAdapter(adapter);
 
-        DriveHistoryRepository driveHistoryRepository = new DriveHistoryRepository();
+        RideRepository rideRepository = new RideRepository();
 
         //promeniti sa driver1 na id ulogovanog korisnika za kt2
-        driveHistoryRepository.getDriveHistoryByDriver("driver1", drives -> {
+        rideRepository.getPastRidesByDriver("30fda86c-f909-4f3d-88a6-97b77c6d2612", drives -> {
             if (drives != null) {
                 allDrives.addAll(drives);
                 filteredDrives.addAll(drives);
@@ -101,9 +100,9 @@ public class DriveHistoryFragment extends Fragment {
 
         filteredDrives.clear();
 
-        for (DriveHistory r : allDrives) {
-            String startDate = r.startTime.split(" ")[0];
-            String endDate = r.endTime.split(" ")[0];
+        for (Ride r : allDrives) {
+            String startDate = r.getStartTime().split(" ")[0];
+            String endDate = r.getEndTime().split(" ")[0];
 
             if (selectedDate.equals(startDate) || selectedDate.equals(endDate)) {
                 filteredDrives.add(r);

@@ -52,7 +52,7 @@ public class VehicleAdapter extends RecyclerView.Adapter<VehicleAdapter.VehicleV
         }
 
         public void bind(Vehicle v) {
-            Name.setText(android.text.Html.fromHtml("<b>Name: </b> " + v.getName()));
+            Name.setText(android.text.Html.fromHtml("<b>Name: </b> " + v.getModel()));
 
             String statusText = v.isBusy() ? "BUSY" : "FREE";
             int color = v.isBusy() ?

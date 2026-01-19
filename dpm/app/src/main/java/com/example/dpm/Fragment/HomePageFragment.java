@@ -12,13 +12,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dpm.Adapter.VehicleAdapter;
-import com.example.dpm.Model.DriveHistory;
+
 import com.example.dpm.Model.Driver;
 import com.example.dpm.Model.Passenger;
+import com.example.dpm.Model.Ride;
+import com.example.dpm.Model.RideLocation;
+import com.example.dpm.Model.RideStatus;
+import com.example.dpm.Model.UserRole;
 import com.example.dpm.Model.Vehicle;
 import com.example.dpm.R;
-import com.example.dpm.Repository.DriveHistoryRepository;
+
 import com.example.dpm.Repository.DriverRepository;
+import com.example.dpm.Repository.PassengerRepository;
+import com.example.dpm.Repository.RideRepository;
 import com.example.dpm.Repository.VehicleRepository;
 
 import org.osmdroid.config.Configuration;
@@ -49,30 +55,192 @@ public class HomePageFragment extends Fragment {
         //vehicleRepository.seedVehicles();
 
         DriverRepository driverRepo = new DriverRepository();
-        DriveHistoryRepository driveRepo = new DriveHistoryRepository();
+        RideRepository rideRepo = new RideRepository();
 
+        PassengerRepository passengerRepo = new PassengerRepository();
+//
+//        Passenger p1 = new Passenger();
+//        p1.setId(UUID.randomUUID().toString());
+//        p1.setFirstName("Petar");
+//        p1.setLastName("Petrović");
+//        p1.setEmail("petar@gmail.com");
+//        p1.setActive(true);
+//        p1.setBlocked(false);
+//        p1.setRole(UserRole.PASSENGER);
+//        p1.setRideIds(new ArrayList<>());
+//        p1.setFavoriteRouteIds(new ArrayList<>());
+//
+//        Passenger p2 = new Passenger();
+//        p2.setId(UUID.randomUUID().toString());
+//        p2.setFirstName("Ana");
+//        p2.setLastName("Anić");
+//        p2.setEmail("ana@gmail.com");
+//        p2.setActive(true);
+//        p2.setBlocked(false);
+//        p2.setRole(UserRole.PASSENGER);
+//        p2.setRideIds(new ArrayList<>());
+//        p2.setFavoriteRouteIds(new ArrayList<>());
+//
+//        Passenger p3 = new Passenger();
+//        p3.setId(UUID.randomUUID().toString());
+//        p3.setFirstName("Marko");
+//        p3.setLastName("Marković");
+//        p3.setEmail("marko@gmail.com");
+//        p3.setActive(true);
+//        p3.setBlocked(false);
+//        p3.setRole(UserRole.PASSENGER);
+//        p3.setRideIds(new ArrayList<>());
+//        p3.setFavoriteRouteIds(new ArrayList<>());
+//
+//        Passenger p4 = new Passenger();
+//        p4.setId(UUID.randomUUID().toString());
+//        p4.setFirstName("Jovana");
+//        p4.setLastName("Jovanović");
+//        p4.setEmail("jovana@gmail.com");
+//        p4.setActive(true);
+//        p4.setBlocked(false);
+//        p4.setRole(UserRole.PASSENGER);
+//        p4.setRideIds(new ArrayList<>());
+//        p4.setFavoriteRouteIds(new ArrayList<>());
+//
+//        passengerRepo.addPassenger(p1);
+//        passengerRepo.addPassenger(p2);
+//        passengerRepo.addPassenger(p3);
+//        passengerRepo.addPassenger(p4);
+//
+//
+//
+//        Driver d1 = new Driver();
+//        d1.setId(UUID.randomUUID().toString());
+//        d1.setFirstName("Milan");
+//        d1.setLastName("Milanković");
+//        d1.setEmail("milan@gmail.com");
+//        d1.setActive(true);
+//        d1.setBlocked(false);
+//        d1.setRole(UserRole.DRIVER);
+//        d1.setAvailable(true);
+//        d1.setWorkingHoursLast24h(6.5);
+//
+//        Driver d2 = new Driver();
+//        d2.setId(UUID.randomUUID().toString());
+//        d2.setFirstName("Stefan");
+//        d2.setLastName("Stefanović");
+//        d2.setEmail("stefan@gmail.com");
+//        d2.setActive(true);
+//        d2.setBlocked(false);
+//        d2.setRole(UserRole.DRIVER);
+//        d2.setAvailable(false);
+//        d2.setWorkingHoursLast24h(3.0);
+//
+//        driverRepo.addDriver(d1);
+//        driverRepo.addDriver(d2);
+//
+//
+//        List<RideLocation> route = List.of(
+//                new RideLocation(
+//                        "Bulevar kralja Aleksandra 73",
+//                        44.8055,
+//                        20.4761,
+//                        0
+//                ),
+//                new RideLocation(
+//                        "Trg republike",
+//                        44.8167,
+//                        20.4606,
+//                        1
+//                )
+//        );
+//
+//        Ride r1 = new Ride(
+//                UUID.randomUUID().toString(),
+//                d1.getId(),
+//                p1.getId(),
+//                "15.01.2026 08:00",
+//                "15.01.2026 08:30",
+//                List.of(p2.getId()),
+//                route,
+//                RideStatus.FINISHED,
+//                null,
+//                1500,
+//                12.5,
+//                false
+//        );
+//
+//// ✔ FINISHED – driver1
+//        Ride r2 = new Ride(
+//                UUID.randomUUID().toString(),
+//                d1.getId(),
+//                p2.getId(),
+//                "16.01.2026 23:00",
+//                "17.01.2026 01:20",
+//                List.of(p3.getId()),
+//                route,
+//                RideStatus.FINISHED,
+//                null,
+//                900,
+//                6.2,
+//                false
+//        );
+//
+//// ✔ FINISHED – driver1
+//        Ride r3 = new Ride(
+//                UUID.randomUUID().toString(),
+//                d1.getId(),
+//                p3.getId(),
+//                "17.01.2026 12:00",
+//                "17.01.2026 12:45",
+//                List.of(p4.getId()),
+//                route,
+//                RideStatus.FINISHED,
+//                null,
+//                3200,
+//                55.0,
+//                true
+//        );
+//
+//// ✖ CANCELED – driver1
+//        Ride r4 = new Ride(
+//                UUID.randomUUID().toString(),
+//                d1.getId(),
+//                p4.getId(),
+//                "18.01.2026 14:00",
+//                "18.01.2026 14:10",
+//                List.of(),
+//                route,
+//                RideStatus.CANCELED,
+//                "PASSENGER",
+//                0,
+//                0,
+//                false
+//        );
+//
+//// ✔ FINISHED – driver2
+//        Ride r5 = new Ride(
+//                UUID.randomUUID().toString(),
+//                d2.getId(),
+//                p1.getId(),
+//                "17.01.2026 09:00",
+//                "17.01.2026 09:25",
+//                List.of(p3.getId(),p4.getId()),
+//                route,
+//                RideStatus.FINISHED,
+//                null,
+//                1100,
+//                8.4,
+//                false
+//        );
+//
+//        rideRepo.addRide(r1);
+//        rideRepo.addRide(r2);
+//        rideRepo.addRide(r3);
+//        rideRepo.addRide(r4);
+//        rideRepo.addRide(r5);
 
-//        Driver driver1 = new Driver("driver1", "Marko", "Markovic");
-//        Driver driver2 = new Driver("driver2", "Jovana", "Jovanovic");
-//
-//        driverRepo.addDriver(driver1);
-//        driverRepo.addDriver(driver2);
-//
-//
-//        List<Passenger> passengers1 = List.of(new Passenger(UUID.randomUUID().toString(), "Petar", "Petrovic"));
-//        List<Passenger> passengers2 = List.of(new Passenger(UUID.randomUUID().toString(), "Milos", "Obilic"));
-//
-//        DriveHistory drive1 = new DriveHistory(UUID.randomUUID().toString(),"driver1", "17.01.2026 08:00", "17.01.2026 08:00", "Airport", "Arena", false, "", 500.0, false, passengers1);
-//        DriveHistory drive2 = new DriveHistory(UUID.randomUUID().toString(),"driver1", "12.01.2026 09:00", "12.01.2026 09:00", "Airport", "Station", false, "", 450.0, false, passengers2);
-//        DriveHistory drive3 = new DriveHistory(UUID.randomUUID().toString(),"driver1" ,"11.01.2026 23:00", "12.01.2026 01:00", "Arena", "Station", true, "Passenger", 0.0, false, passengers1);
-//        DriveHistory drive4 = new DriveHistory(UUID.randomUUID().toString(), "driver2","18.01.2026 11:00", "18.01.2026 11:00", "Station", "Airport", false, "", 600.0, true, passengers2);
-//
-//        driveRepo.addDriveHistory(drive1);
-//        driveRepo.addDriveHistory(drive2);
-//        driveRepo.addDriveHistory(drive3);
-//        driveRepo.addDriveHistory(drive4);
 
         return view;
+
+
+
     }
 
     @Override
@@ -100,7 +268,7 @@ public class HomePageFragment extends Fragment {
                     for (Vehicle v : vehicles) {
                         Marker marker = new Marker(map);
                         marker.setPosition(v.getPosition());
-                        marker.setTitle(v.getName());
+                        marker.setTitle(v.getModel());
 
                         int statusColor = v.isBusy() ?
                                 getResources().getColor(R.color.red) :

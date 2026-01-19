@@ -1,7 +1,5 @@
 package com.example.dpm.Model;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Passenger extends User {
+public class Notification {
 
-    private List<String> rideIds;
-    private List<String> favoriteRouteIds;
-
+    private String id;
+    private String  userId;
+    private String message;
+    private boolean read;
+    private long createdAt;
 }
