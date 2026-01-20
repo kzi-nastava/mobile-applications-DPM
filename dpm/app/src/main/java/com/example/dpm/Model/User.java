@@ -15,10 +15,12 @@ public abstract class User {
     protected String password;
     protected String firstName;
     protected String lastName;
-    protected String address;
+    protected String Country;
+    protected String City;
+    protected String Street;
+    protected String Number;
     protected String phoneNumber;
     protected String profileImage;
-
     protected boolean active;
     protected boolean blocked;
     protected UserRole role;
