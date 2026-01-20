@@ -135,6 +135,7 @@ public class RegisterActivity extends AppCompatActivity {
                         userMap.put("blocked", false);
                         userMap.put("role", UserRole.PASSENGER.name());
 
+                        //trebalo bi da koristi repository
                         db.collection("passengers")
                                 .document(firebaseUser.getUid())
                                 .set(userMap);
