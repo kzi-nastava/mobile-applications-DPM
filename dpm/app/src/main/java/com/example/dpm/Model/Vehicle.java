@@ -1,6 +1,7 @@
 package com.example.dpm.Model;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.firestore.DocumentId;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -13,15 +14,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Vehicle {
 
+    @DocumentId
     private String id;
-    private String model;
-    private double latitude;
-    private double longitude;
-    private boolean busy;
-    private String plateNumber;
-    private int seats;
+
     private boolean babyFriendly;
     private boolean petFriendly;
+    private boolean busy;
+
+    private String driverId;
+    private String model;
+    private String plateNumber;
+
+    private int seats;
+    private double latitude;
+    private double longitude;
 
     public GeoPoint getPosition() {
         return new GeoPoint(latitude, longitude);

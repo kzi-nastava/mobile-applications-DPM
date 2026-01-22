@@ -1,6 +1,8 @@
 package com.example.dpm.Model;
 
 
+import com.google.firebase.firestore.DocumentId;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,18 +10,25 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class User {
+public class User {
 
+    @DocumentId
     protected String id;
-    protected String email;
-    protected String password;
-    protected String firstName;
-    protected String lastName;
-    protected String address;
-    protected String phoneNumber;
-    protected String profileImage;
 
     protected boolean active;
     protected boolean blocked;
+    protected String blockNote;
+
+    protected String city;
+    protected String country;
+    protected String street;
+
+    protected String email;
+    protected String firstName;
+    protected String lastName;
+    protected String number;
+    protected String phoneNumber;
+    protected String profileImageUrl;
+
     protected UserRole role;
 }

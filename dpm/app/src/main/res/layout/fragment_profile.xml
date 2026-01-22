@@ -11,31 +11,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- TIP KORISNIKA -->
-        <RadioGroup
-            android:id="@+id/rgUserType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal">
-
-            <RadioButton
-                android:id="@+id/rbDriver"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Driver"
-                android:checked="true"/>
-
-            <RadioButton
-                android:id="@+id/rbUser"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="User"
-                android:layout_marginStart="16dp"/>
-
-        </RadioGroup>
-
 
         <!-- PROFILNA SLIKA + DUGMAD -->
         <LinearLayout
@@ -96,30 +71,35 @@
             android:layout_height="wrap_content" />
 
         <EditText
+            android:id="@+id/etName"
             android:hint="Name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Miroslav"/>
 
         <EditText
+            android:id="@+id/etLastName"
             android:hint="Lastname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Đaković"/>
 
         <EditText
+            android:id="@+id/etEmail"
             android:hint="Email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="micakamiondzija@gmail.com"/>
 
         <EditText
+            android:id="@+id/etAddress"
             android:hint="Address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="-Petra Dobrivića 16"/>
 
         <EditText
+            android:id="@+id/etPhoneNumber"
             android:hint="Phone number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -154,16 +134,13 @@
                 android:layout_height="wrap_content"/>
 
             <TextView
-                android:text="Mark: Toyota"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            <TextView
+                android:id="@+id/tvmodel"
                 android:text="Model: Corolla"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
             <TextView
+                android:id="@+id/tvregistration"
                 android:text="Registration: BG-123-AB"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
