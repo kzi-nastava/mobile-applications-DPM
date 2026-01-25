@@ -29,4 +29,23 @@ public class VehicleRepository {
                         listener.onSuccess(snapshot.toObjects(Vehicle.class))
                 );
     }
+    public void getVehicleByDriverId(String driverId, OnSuccessListener<Vehicle> listener) {
+        db.collection("vehicles")
+                .whereEqualTo("driverId", driverId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    if (qs.isEmpty()) {
+                        listener.onSuccess(null);
+                    } else {
+                        listener.onSuccess(qs.getDocuments().get(0).toObject(Vehicle.class));
+                    }
+                });
+    }
+
+    public void updateVehicle(Vehicle vehicle) {
+        db.collection("vehicles")
+                .document(vehicle.getId())
+                .set(vehicle);
+    }
 }

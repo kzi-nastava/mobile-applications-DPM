@@ -18,6 +18,7 @@ import com.example.dpm.R;
 import com.example.dpm.Repository.AdminRepository;
 import com.example.dpm.Repository.DriverRepository;
 import com.example.dpm.Repository.PassengerRepository;
+import com.example.dpm.Repository.VehicleRepository;
 import com.example.dpm.Session.UserSession;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
     private PassengerRepository passengerRepository;
     private DriverRepository driverRepository;
     private AdminRepository adminRepository;
+    private VehicleRepository vehicleRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +42,13 @@ public class LoginActivity extends AppCompatActivity {
         passengerRepository = new PassengerRepository();
         driverRepository = new DriverRepository();
         adminRepository = new AdminRepository();
+        vehicleRepository = new VehicleRepository();
 
         EditText emailInput = findViewById(R.id.login_email_input);
         EditText passwordInput = findViewById(R.id.login_password_input);
         Button loginButton = findViewById(R.id.login_button);
         TextView registerText = findViewById(R.id.login_register);
+        TextView forgotPasswordText = findViewById(R.id.login_forgot_password);
 
         loginButton.setOnClickListener(v -> {
 
@@ -91,12 +95,26 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(this, RegisterActivity.class));
             finish();
         });
+
+        forgotPasswordText.setOnClickListener(v -> {
+            startActivity(new Intent(this, ResetPasswordActivity.class));
+            finish();
+        });
     }
 
     private void tryDriver(String uid) {
         driverRepository.getDriverById(uid, driver -> {
             if (driver != null) {
-                handleLoginSuccess(driver);
+
+                vehicleRepository.getVehicleByDriverId(driver.getId(), vehicle -> {
+                    if (vehicle != null) {
+                        vehicle.setBusy(false);
+                        vehicleRepository.updateVehicle(vehicle);
+                    }
+
+                    handleLoginSuccess(driver);
+                });
+
             } else {
                 tryAdmin(uid);
             }
