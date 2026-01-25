@@ -47,4 +47,24 @@ public class PassengerRepository {
                         listener.onSuccess(snapshot.toObjects(Passenger.class))
                 );
     }
+
+    public void activatePassenger(String userId,
+                                  Runnable onSuccess,
+                                  java.util.function.Consumer<Exception> onFailure) {
+
+        db.collection("users")
+                .document(userId)
+                .update("active", true)
+                .addOnSuccessListener(v -> {
+                    if (onSuccess != null) {
+                        onSuccess.run();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (onFailure != null) {
+                        onFailure.accept(e);
+                    }
+                });
+    }
+
 }

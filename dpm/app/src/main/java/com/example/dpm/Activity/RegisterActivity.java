@@ -3,19 +3,16 @@ package com.example.dpm.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.text.TextUtils;
+import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.dpm.Model.Passenger;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
+import com.example.dpm.Repository.PassengerRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -25,6 +22,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    private PassengerRepository passengerRepository;
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
@@ -42,7 +40,6 @@ public class RegisterActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // UI
         profileImage = findViewById(R.id.profileImageView);
         Button registerButton = findViewById(R.id.register_next_button);
         TextView loginText = findViewById(R.id.register_login_text);
@@ -59,14 +56,16 @@ public class RegisterActivity extends AppCompatActivity {
         EditText streetInput = findViewById(R.id.register_street_input);
         EditText numberInput = findViewById(R.id.register_number_input);
 
-        // Image picker
+        // Gallery picker
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         imageUri = result.getData().getData();
-                        profileImage.setImageURI(imageUri);
-                        imageSelected = true;
+                        if (imageUri != null) {
+                            profileImage.setImageURI(imageUri);
+                            imageSelected = true;
+                        }
                     }
                 }
         );
@@ -77,26 +76,28 @@ public class RegisterActivity extends AppCompatActivity {
             imagePickerLauncher.launch(intent);
         });
 
-        // Go to login
         loginText.setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
 
-        // REGISTER
         registerButton.setOnClickListener(v -> {
 
             String email = emailInput.getText().toString().trim();
             String password = passwordInput.getText().toString().trim();
             String repeatPassword = repeatPasswordInput.getText().toString().trim();
 
-            if (email.isEmpty() || password.isEmpty() || repeatPassword.isEmpty()) {
-                Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
+            // Minimal validation
+            if (TextUtils.isEmpty(email) ||
+                    TextUtils.isEmpty(password) ||
+                    TextUtils.isEmpty(repeatPassword)) {
+
+                Toast.makeText(this, "Fill all required fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (!password.equals(repeatPassword)) {
-                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Passwords don't match", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -104,48 +105,68 @@ public class RegisterActivity extends AppCompatActivity {
                     .addOnSuccessListener(authResult -> {
 
                         FirebaseUser firebaseUser = authResult.getUser();
-                        if (firebaseUser == null) return;
+                        if (firebaseUser == null) {
+                            Toast.makeText(this, "Auth error: user null", Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
-                        // SEND ACTIVATION EMAIL (24h)
                         firebaseUser.sendEmailVerification()
-                                .addOnSuccessListener(h -> {
-                                    Log.d("EMAIL", "Verification email SENT");
+                                .addOnSuccessListener(x -> {
+
+                                    Passenger passenger = new Passenger();
+
+                                    passenger.setId(firebaseUser.getUid());
+                                    passenger.setEmail(email);
+
+                                    passenger.setFirstName(firstNameInput.getText().toString().trim());
+                                    passenger.setLastName(lastNameInput.getText().toString().trim());
+                                    passenger.setPhoneNumber(phoneInput.getText().toString().trim());
+
+                                    passenger.setCountry(countryInput.getText().toString().trim());
+                                    passenger.setCity(cityInput.getText().toString().trim());
+                                    passenger.setStreet(streetInput.getText().toString().trim());
+                                    passenger.setNumber(numberInput.getText().toString().trim());
+
+                                    passenger.setProfileImageUrl(
+                                            imageSelected ? imageUri.toString() : "DEFAULT"
+                                    );
+
+                                    passenger.setActive(false);   // čeka email verifikaciju
+                                    passenger.setBlocked(false);
+                                    passenger.setRole(UserRole.PASSENGER);
+
+                                    passengerRepository = new PassengerRepository();
+                                    passengerRepository.addPassenger(passenger);
+
+                                    Toast.makeText(
+                                            this,
+                                            "Activation email sent. Check your inbox (or Spam).",
+                                            Toast.LENGTH_LONG
+                                    ).show();
+
+                                    startActivity(
+                                            new Intent(this, ActivationPendingActivity.class)
+                                    );
+                                    finish();
+
                                 })
-                                .addOnFailureListener(e -> {
-                                    Log.e("EMAIL", "Verification email FAILED", e);
-                                });
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(
+                                                this,
+                                                "Email verification failed: " + e.getMessage(),
+                                                Toast.LENGTH_LONG
+                                        ).show()
+                                );
 
-                        // USER DATA (NO PASSWORD)
-                        Map<String, Object> userMap = new HashMap<>();
-                        userMap.put("id", firebaseUser.getUid());
-                        userMap.put("email", email);
-                        userMap.put("firstName", firstNameInput.getText().toString());
-                        userMap.put("lastName", lastNameInput.getText().toString());
-                        userMap.put("phoneNumber", phoneInput.getText().toString());
-
-                        userMap.put("country", countryInput.getText().toString());
-                        userMap.put("city", cityInput.getText().toString());
-                        userMap.put("street", streetInput.getText().toString());
-                        userMap.put("number", numberInput.getText().toString());
-
-                        userMap.put("profileImage",
-                                imageSelected ? imageUri.toString() : "DEFAULT");
-
-                        userMap.put("active", false); // WAITING FOR EMAIL VERIFICATION
-                        userMap.put("blocked", false);
-                        userMap.put("role", UserRole.PASSENGER.name());
-
-                        //trebalo bi da koristi repository
-                        db.collection("passengers")
-                                .document(firebaseUser.getUid())
-                                .set(userMap);
-
-                        startActivity(new Intent(this, ActivationPendingActivity.class));
-                        finish();
                     })
                     .addOnFailureListener(e ->
-                            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                    this,
+                                    "Register failed: " + e.getMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show()
                     );
         });
+
     }
 }

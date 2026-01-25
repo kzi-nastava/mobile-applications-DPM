@@ -25,7 +25,6 @@ public class User {
     protected String number;
 
     protected String email;
-    protected String password;
     protected String firstName;
     protected String lastName;
     protected String phoneNumber;
