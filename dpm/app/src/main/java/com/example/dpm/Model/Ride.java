@@ -35,4 +35,6 @@ public class Ride {
     private List<RideLocation> locations;
 
     private RideStatus status;
+
+    //public getTotalPrice() {}
 }

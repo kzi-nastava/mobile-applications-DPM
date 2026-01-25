@@ -22,11 +22,11 @@ public class User {
     protected String city;
     protected String country;
     protected String street;
+    protected String number;
 
     protected String email;
     protected String firstName;
     protected String lastName;
-    protected String number;
     protected String phoneNumber;
     protected String profileImageUrl;
 

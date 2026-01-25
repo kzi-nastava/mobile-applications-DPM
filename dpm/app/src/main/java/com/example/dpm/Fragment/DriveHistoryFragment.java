@@ -51,7 +51,7 @@ public class DriveHistoryFragment extends Fragment {
         RideRepository rideRepository = new RideRepository();
 
         //promeniti sa driver1 na id ulogovanog korisnika za kt2
-        rideRepository.getPastRidesByDriver("30fda86c-f909-4f3d-88a6-97b77c6d2612", drives -> {
+        rideRepository.getPastRidesByDriver("GoEpek1P3KZb44ahVYd4", drives -> {
             if (drives != null) {
                 allDrives.addAll(drives);
                 filteredDrives.addAll(drives);

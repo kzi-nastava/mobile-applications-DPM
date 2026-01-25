@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -27,8 +28,17 @@ import com.example.dpm.Repository.UserRepository;
 
 public class ProfileFragment extends Fragment {
 
+    public UserRepository userRepository;
+
+    public VehicleRepository vehicleRepository;
+
+    public User loggedUInUser;
+
     public ProfileFragment() {
         // Required empty public constructor
+        userRepository = new UserRepository();
+        vehicleRepository = new VehicleRepository();
+        loggedUInUser = new User(); // UserSession.getInstance().getUser();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -41,49 +51,38 @@ public class ProfileFragment extends Fragment {
         LinearLayout driverLayout = view.findViewById(R.id.layoutDriverInfo);
         Button btnSaveChanges = view.findViewById(R.id.btnSaveChanges);
 
-        UserRepository userRepository = new UserRepository();
-
         userRepository.getUserById("lhjHXrZvqSz6QBG8Kyf2", user -> {
 
             if (user == null) {
-                // user ne postoji
+                Log.d("Errors", "User doesnt exist.");;
                 return;
             }
 
-            UserSession.getInstance().login(requireContext(), user);
+            loggedUInUser = user;
 
             Log.d("SESSION", user.getEmail());
         });
 
-        User user = UserSession.getInstance().getUser();
+        fillInUserFields(view, loggedUInUser);
 
-        if (user == null) {
-            // sigurnosna provera
-            return null;
-        }
-
-        ((EditText) view.findViewById(R.id.etName)).setText(user.getFirstName());
-        ((EditText) view.findViewById(R.id.etLastName)).setText(user.getLastName());
-        ((EditText) view.findViewById(R.id.etEmail)).setText(user.getEmail());
-        ((EditText) view.findViewById(R.id.etAddress)).setText(user.getStreet() + user.getNumber().toString());
-        ((EditText) view.findViewById(R.id.etPhoneNumber)).setText(user.getPhoneNumber());
-
-
-
-        if (user.getRole() == UserRole.DRIVER) {
+        if(loggedUInUser.getRole() == UserRole.DRIVER) {
             driverLayout.setVisibility(View.VISIBLE);
             btnSaveChanges.setVisibility(View.GONE);
-
-            VehicleRepository vehicleRepository = new VehicleRepository();
-            vehicleRepository.getVehiclesByUserId(user.getId(), vehicles -> {
-                Vehicle vehicle = (Vehicle) vehicles.get(0);
-                ((TextView) view.findViewById(R.id.tvmodel)).setText(vehicle.getModel());
-            });
         }
         else {
             driverLayout.setVisibility(View.GONE);
             btnSaveChanges.setVisibility(View.VISIBLE);
         }
+
+//        if (user.getRole() == UserRole.DRIVER) {
+//
+//
+//            VehicleRepository vehicleRepository = new VehicleRepository();
+//
+//        }
+//        else {
+//
+//        }
 
 
         return view;
@@ -99,6 +98,32 @@ public class ProfileFragment extends Fragment {
                     .addToBackStack(null) // da može nazad dugme
                     .commit();
         });
+    }
+
+    public void fillInUserFields(View view, User user) {
+
+        ((EditText) view.findViewById(R.id.etName)).setText(user.getFirstName());
+        ((EditText) view.findViewById(R.id.etLastName)).setText(user.getLastName());
+        ((EditText) view.findViewById(R.id.etEmail)).setText(user.getEmail());
+        ((EditText) view.findViewById(R.id.etAddress)).setText(user.getStreet() + user.getNumber().toString());
+        ((EditText) view.findViewById(R.id.etPhoneNumber)).setText(user.getPhoneNumber());
+
+        ImageView imgProfile = view.findViewById(R.id.imgProfile);
+
+        if (user.getProfileImageUrl() == null || user.getProfileImageUrl().isEmpty()) {
+            imgProfile.setImageResource(R.drawable.profile_icon);
+        } else {
+//            Glide.with(view.getContext())
+//                    .load(user.getProfileImageUrl())
+//                    .placeholder(R.drawable.profile_icon)
+//                    .error(R.drawable.profile_icon)
+//                    .into(imgProfile);
+        }
+
+    }
+
+    public void fillDriverFields(User user) {
+
     }
 
 }
