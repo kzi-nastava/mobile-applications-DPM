@@ -1,6 +1,7 @@
 package com.example.dpm.Repository;
 
 import com.example.dpm.Model.Passenger;
+import com.example.dpm.Model.UserRole;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -10,26 +11,40 @@ public class PassengerRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-
     public void addPassenger(Passenger passenger) {
-        db.collection("passengers").document(passenger.getId()).set(passenger);
+        passenger.setRole(UserRole.PASSENGER); // OBAVEZNO
+        db.collection("users")
+                .document(passenger.getId())
+                .set(passenger);
     }
 
-
     public void getPassengerById(String passengerId, OnSuccessListener<Passenger> listener) {
-        db.collection("passengers").document(passengerId).get().addOnSuccessListener(snapshot -> {
-            if (snapshot.exists()) {
-                listener.onSuccess(snapshot.toObject(Passenger.class));
-            } else {
-                listener.onSuccess(null);
-            }
-        });
+        db.collection("users")
+                .document(passengerId)
+                .get()
+                .addOnSuccessListener(doc -> {
+
+                    if (!doc.exists()) {
+                        listener.onSuccess(null);
+                        return;
+                    }
+
+                    String role = doc.getString("role");
+                    if (!UserRole.PASSENGER.name().equals(role)) {
+                        listener.onSuccess(null); // nije passenger
+                        return;
+                    }
+
+                    listener.onSuccess(doc.toObject(Passenger.class));
+                });
     }
 
     public void getAllPassengers(OnSuccessListener<List<Passenger>> listener) {
-        db.collection("passengers").get().addOnSuccessListener(snapshot ->
-                listener.onSuccess(snapshot.toObjects(Passenger.class))
-        );
+        db.collection("users")
+                .whereEqualTo("role", UserRole.PASSENGER.name())
+                .get()
+                .addOnSuccessListener(snapshot ->
+                        listener.onSuccess(snapshot.toObjects(Passenger.class))
+                );
     }
-
 }

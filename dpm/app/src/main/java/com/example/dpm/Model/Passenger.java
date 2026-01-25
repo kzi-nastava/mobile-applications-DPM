@@ -7,11 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Passenger extends User {
-
-    private List<String> rideIds;
-    private List<String> favoriteRouteIds;
-
+    public Passenger() {
+        super();
+        this.role = UserRole.PASSENGER;
+    }
 }

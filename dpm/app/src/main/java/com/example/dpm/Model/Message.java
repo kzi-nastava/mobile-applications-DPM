@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Message {
 
-    private String id;
-    private String chatId;
-    private String senderId;
-    private String content;
-    private long timestamp;
+    private String from;
+    private String sentAt;
+    private String text;
 }
