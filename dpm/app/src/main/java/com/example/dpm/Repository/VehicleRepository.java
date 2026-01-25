@@ -20,4 +20,13 @@ public class VehicleRepository {
                 listener.onSuccess(snapshot.toObjects(Vehicle.class))
         );
     }
+
+    public void getVehiclesByUserId(String userId, OnSuccessListener<List<Vehicle>> listener) {
+        db.collection("vehicles")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener(snapshot ->
+                        listener.onSuccess(snapshot.toObjects(Vehicle.class))
+                );
+    }
 }
