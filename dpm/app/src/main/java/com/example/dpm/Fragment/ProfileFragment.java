@@ -1,5 +1,7 @@
 package com.example.dpm.Fragment;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +20,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.example.dpm.Model.ChangeDataRequest;
+import com.example.dpm.Model.FirebaseProvider;
 import com.example.dpm.Model.RequestStatus;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.Model.Vehicle;
@@ -29,6 +32,12 @@ import com.example.dpm.Model.User;
 import com.example.dpm.Model.Driver;
 import com.example.dpm.Repository.UserRepository;
 
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.bumptech.glide.Glide;
+
+
 
 public class ProfileFragment extends Fragment {
 
@@ -39,6 +48,10 @@ public class ProfileFragment extends Fragment {
     public ChangeDataRequestRepository changeDataRequestRepository;
 
     private static User loggedInUser = UserSession.getInstance().getUser();
+
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private Uri imageUri;
+    private ImageView imgProfile;
 
     public ProfileFragment() {
         userRepository = new UserRepository();
@@ -54,6 +67,15 @@ public class ProfileFragment extends Fragment {
         loadPage();
 
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        imgProfile = view.findViewById(R.id.imgProfile);
+
+        Button btnAddImage = view.findViewById(R.id.btnAddImage);
+        Button btnChangeImage = view.findViewById(R.id.btnChangeImage);
+
+        btnAddImage.setOnClickListener(v -> openGallery());
+        btnChangeImage.setOnClickListener(v -> uploadProfileImage());
+
 
         LinearLayout driverLayout = view.findViewById(R.id.layoutDriverInfo);
         Button btnSaveChanges = view.findViewById(R.id.btnSaveChanges);
@@ -109,21 +131,23 @@ public class ProfileFragment extends Fragment {
         ((EditText) view.findViewById(R.id.etNumber)).setText(user.getNumber());
         ((EditText) view.findViewById(R.id.etPhoneNumber)).setText(user.getPhoneNumber());
 
-        ImageView imgProfile = view.findViewById(R.id.imgProfile);
+        imgProfile = view.findViewById(R.id.imgProfile);
 
-        if (user.getProfileImageUrl() == null || user.getProfileImageUrl().equals("DEFAULT")) {
-            imgProfile.setImageResource(R.drawable.profile_icon);
-        } else {
-//            Glide.with(view.getContext())
-//                    .load(user.getProfileImageUrl())
-//                    .placeholder(R.drawable.profile_icon)
-//                    .error(R.drawable.profile_icon)
-//                    .into(imgProfile);
+        imgProfile.setImageResource(R.drawable.profile_icon);
+
+        String url = user.getProfileImageUrl();
+
+        if (url != null &&
+                !url.trim().isEmpty() &&
+                !url.trim().equalsIgnoreCase("DEFAULT")) {
+
+            Glide.with(view.getContext())
+                    .load(url)
+                    .placeholder(R.drawable.profile_icon)
+                    .error(R.drawable.profile_icon)
+                    .into(imgProfile);
         }
-
     }
-
-    //TODO: Popuniti polje koliko je vozac aktivan u poslednja 24h
     public void fillDriverFields(View view, Driver driver) {
 
         vehicleRepository.getVehicleByDriverId(driver.getId(), vehicle -> {
@@ -132,6 +156,8 @@ public class ProfileFragment extends Fragment {
                 Log.d("Error", "Vehicle doesn't exist.");
                 return;
             }
+
+            ((TextView) view.findViewById(R.id.tvActiveHours)).setText("Active hours in last 24h: " +  driver.workingHoursLast24h());
 
             ((TextView) view.findViewById(R.id.tvModel)).setText("Model: " + vehicle.getModel());
 
@@ -227,5 +253,68 @@ public class ProfileFragment extends Fragment {
     private void loadPage() {
         loggedInUser = UserSession.getInstance().getUser();
     }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK) {
+            if (data != null && data.getData() != null) {
+                imageUri = data.getData();
+                imgProfile.setImageURI(imageUri);
+            }
+        }
+    }
+
+    private void uploadProfileImage() {
+
+        if (imageUri == null) {
+            Toast.makeText(getContext(), "Select image first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StorageReference ref = FirebaseStorage.getInstance()
+                .getReference()
+                .child("profile_images/" + loggedInUser.getId() + ".jpg");
+
+        ref.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        ref.getDownloadUrl().addOnSuccessListener(uri -> {
+
+                            String imageUrl = uri.toString();
+
+                            FirebaseProvider.getDb()
+                                    .collection("users")
+                                    .document(loggedInUser.getId())
+                                    .update("profileImageUrl", imageUrl)
+                                    .addOnSuccessListener(unused -> {
+
+                                        Toast.makeText(getContext(),
+                                                "Profile image updated!",
+                                                Toast.LENGTH_SHORT).show();
+
+                                        userRepository.getUserById(
+                                                loggedInUser.getId(),
+                                                user -> {
+                                                    UserSession.getInstance().setUser(user);
+                                                    Glide.with(getContext())
+                                                            .load(user.getProfileImageUrl())
+                                                            .into(imgProfile);
+                                                }
+                                        );
+                                    });
+                        })
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+    }
+
 
 }
