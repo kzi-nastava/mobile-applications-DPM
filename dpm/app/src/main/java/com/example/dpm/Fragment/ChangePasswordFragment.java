@@ -5,15 +5,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.dpm.Model.User;
 import com.example.dpm.R;
+import com.example.dpm.Repository.UserRepository;
+import com.example.dpm.Session.UserSession;
 
 public class ChangePasswordFragment extends Fragment {
 
+    private User loggedInUser;
+
+    private UserRepository userRepository;
+
     public ChangePasswordFragment() {
-        // Required empty public constructor
+        loadPage();
+        userRepository = new UserRepository();
     }
 
     @Override
@@ -36,8 +46,38 @@ public class ChangePasswordFragment extends Fragment {
 
         // Promeni lozinku dugme (samo GUI, vraća na profil)
         btnChangePassword.setOnClickListener(v -> {
-            getActivity().getSupportFragmentManager().popBackStack();
+            changePassword(view);
         });
+    }
+
+    public void loadPage() {
+        loggedInUser = UserSession.getInstance().getUser();
+    }
+
+    public void changePassword(View view) {
+        String email = loggedInUser.getEmail();
+        String oldPassword = ((EditText) view.findViewById(R.id.etOldPassword))
+                .getText().toString().trim();
+        String newPassword = ((EditText) view.findViewById(R.id.etNewPassword))
+                .getText().toString().trim();
+        String repeatNewPassword = ((EditText) view.findViewById(R.id.etRepeatNewPassword))
+                .getText().toString().trim();
+        if(newPassword.equals(repeatNewPassword)) {
+            userRepository.reauthenticateAndChangePassword(email,
+                    oldPassword,
+                    newPassword,
+                    aVoid -> {
+                        Toast.makeText(getContext(), "Šifra uspešno promenjena", Toast.LENGTH_SHORT).show();
+                        ((EditText) view.findViewById(R.id.etOldPassword)).setText("");
+                        ((EditText) view.findViewById(R.id.etNewPassword)).setText("");
+                        ((EditText) view.findViewById(R.id.etRepeatNewPassword)).setText("");
+                    },
+                    e -> Toast.makeText(getContext(), "Pogrešno unešena stara šifra", Toast.LENGTH_LONG).show()
+            );
+        }
+        else {
+            Toast.makeText(getContext(), "Nisu iste nove šifre", Toast.LENGTH_SHORT).show();
+        }
     }
 
 }

@@ -7,12 +7,20 @@ import com.example.dpm.Model.Driver;
 import com.example.dpm.Model.Passenger;
 import com.example.dpm.Model.User;
 import com.example.dpm.Model.UserRole;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserRepository {
 
@@ -89,5 +97,61 @@ public class UserRepository {
         }
         return user;
     }
+
+    public void updateUserData(String userId,
+                               String city,
+                               String country,
+                               String street,
+                               String number,
+                               String email,
+                               String firstName,
+                               String lastName,
+                               String phoneNumber,
+                               OnSuccessListener<Void> onSuccess,
+                               OnFailureListener onFailure) {
+
+        Map<String, Object> updates = new HashMap<>();
+
+        updates.put("city", city);
+        updates.put("country", country);
+        updates.put("street", street);
+        updates.put("number", number);
+        updates.put("email", email);
+        updates.put("firstName", firstName);
+        updates.put("lastName", lastName);
+        updates.put("phoneNumber", phoneNumber);
+
+        db.collection("users")
+                .document(userId)
+                .update(updates)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
+    public void reauthenticateAndChangePassword(String email,
+                                                String oldPassword,
+                                                String newPassword,
+                                                OnSuccessListener<Void> onSuccess,
+                                                OnFailureListener onFailure) {
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            onFailure.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
+        AuthCredential credential =
+                EmailAuthProvider.getCredential(email, oldPassword);
+
+        user.reauthenticate(credential)
+                .addOnSuccessListener(aVoid ->
+                        user.updatePassword(newPassword)
+                                .addOnSuccessListener(onSuccess)
+                                .addOnFailureListener(onFailure)
+                )
+                .addOnFailureListener(onFailure);
+    }
+
+
 }
 

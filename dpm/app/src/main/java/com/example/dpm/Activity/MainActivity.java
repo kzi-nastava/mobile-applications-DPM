@@ -5,6 +5,7 @@ import static androidx.core.content.ContextCompat.startActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -28,8 +29,14 @@ public class MainActivity extends AppCompatActivity {
     MaterialToolbar toolbar;
     NavigationView navigationView;
 
+    UserSession session;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        session = UserSession.getInstance();
+        boolean loggedIn = session.isLoggedIn();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -56,9 +63,27 @@ public class MainActivity extends AppCompatActivity {
             if (id == R.id.bottom_bar_home) {
                 selectedFragment = new HomePageFragment();
             } else if (id == R.id.bottom_bar_profile) {
-                selectedFragment = new ProfileFragment();
+                if(!loggedIn) {
+                    Toast.makeText(
+                            this,
+                            "Morate se ulogovati",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+                else {
+                    selectedFragment = new ProfileFragment();
+                }
             } else if (id == R.id.bottom_bar_notification) {
-
+                if(!loggedIn) {
+                    Toast.makeText(
+                            this,
+                            "Morate se ulogovati",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+                else {
+                    //selectedFragment = new ProfileFragment();
+                }
             }
 
             if (selectedFragment != null) {
@@ -103,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateDrawerMenu() {
 
-        UserSession session = UserSession.getInstance();
+        session = UserSession.getInstance();
         boolean loggedIn = session.isLoggedIn();
 
         Menu menu = navigationView.getMenu();

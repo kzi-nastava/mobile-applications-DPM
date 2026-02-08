@@ -11,14 +11,18 @@ public class Driver extends User {
         this.role = UserRole.DRIVER;
     }
 
-    // Napraviti funkciju u repositorijumu koja proverava da li je taj driver aktivan trenutno i pozvati ovde
+    // TODO:Napraviti funkciju u repositorijumu koja proverava da li je taj driver aktivan trenutno i pozvati ovde
     //public boolean active() {
         // return driverRepository.isActiveDriverById(...
     //}
 
-    //Napraviti funkciju koja proverava koliko je radio u poslednjih 24 sata
-    //public int workingHoursLast24h() {}
 
-    //Napraviti funkciju koja kroz driver repositori nalazi njegovo vozilo
+    //TODO: Izracunati koliko je bio aktivan u poslednja 24h preko voznji
+    public int workingHoursLast24h() {
+        //Napravljeno zbog KT2 i pregleda profila
+        return 1;
+    }
+
+    //TODO:Napraviti funkciju koja kroz driver repositori nalazi njegovo vozilo
     //public String getVehicleId() {}
 }
