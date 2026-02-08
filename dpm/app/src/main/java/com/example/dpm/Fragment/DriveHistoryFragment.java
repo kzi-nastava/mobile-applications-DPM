@@ -16,6 +16,7 @@ import com.example.dpm.Adapter.RideAdapter;
 import com.example.dpm.Model.Ride;
 import com.example.dpm.R;
 import com.example.dpm.Repository.RideRepository;
+import com.example.dpm.Session.UserSession;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,6 +29,7 @@ public class DriveHistoryFragment extends Fragment {
     List<Ride> allDrives = new ArrayList<>();
     List<Ride> filteredDrives = new ArrayList<>();
     RideAdapter adapter;
+    UserSession session = UserSession.getInstance();
 
 
     @Override
@@ -50,14 +52,19 @@ public class DriveHistoryFragment extends Fragment {
 
         RideRepository rideRepository = new RideRepository();
 
-        //promeniti sa driver1 na id ulogovanog korisnika za kt2
-        rideRepository.getPastRidesByDriver("GoEpek1P3KZb44ahVYd4", drives -> {
-            if (drives != null) {
-                allDrives.addAll(drives);
-                filteredDrives.addAll(drives);
-                adapter.notifyDataSetChanged();
-            }
-        });
+
+        if (session.getUser() != null) {
+            String driverId = session.getUser().getId();
+
+            rideRepository.getPastRidesByDriver(driverId, drives -> {
+                if (drives != null) {
+                    allDrives.addAll(drives);
+                    filteredDrives.addAll(drives);
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        }
+
 
         btnPickDate.setOnClickListener(v -> showDatePicker());
 

@@ -4,6 +4,7 @@ import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -13,10 +14,13 @@ import androidx.fragment.app.Fragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.ProfileFragment;
+import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
+import com.example.dpm.Session.UserSession;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,8 +59,6 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new ProfileFragment();
             } else if (id == R.id.bottom_bar_notification) {
 
-            } else if (id == R.id.bottom_bar_logout) {
-
             }
 
             if (selectedFragment != null) {
@@ -77,6 +79,16 @@ public class MainActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.nav_history) {
                 getSupportFragmentManager().beginTransaction().replace( R.id.frameLayout, new DriveHistoryFragment()).commit();
             }
+            if (item.getItemId() == R.id.nav_logout) {
+
+                FirebaseAuth.getInstance().signOut();
+                UserSession.getInstance().clear();
+
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -85,6 +97,32 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new HomePageFragment()).commit();
         }
 
+        updateDrawerMenu();
+
+    }
+
+    private void updateDrawerMenu() {
+
+        UserSession session = UserSession.getInstance();
+        boolean loggedIn = session.isLoggedIn();
+
+        Menu menu = navigationView.getMenu();
+
+        menu.findItem(R.id.nav_login).setVisible(!loggedIn);
+        menu.findItem(R.id.nav_register).setVisible(!loggedIn);
+        menu.findItem(R.id.nav_logout).setVisible(loggedIn);
+
+        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
+            menu.findItem(R.id.nav_history).setVisible(true);
+        } else {
+            menu.findItem(R.id.nav_history).setVisible(false);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateDrawerMenu();
     }
 
 }
