@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 if(!loggedIn) {
                     Toast.makeText(
                             this,
-                            "Morate se ulogovati",
+                            "You need to login first!",
                             Toast.LENGTH_SHORT
                     ).show();
                 }
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 if(!loggedIn) {
                     Toast.makeText(
                             this,
-                            "Morate se ulogovati",
+                            "You need to login first!",
                             Toast.LENGTH_SHORT
                     ).show();
                 }
