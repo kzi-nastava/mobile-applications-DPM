@@ -14,4 +14,8 @@
         android:id="@+id/nav_register"
         android:title="Register"
         />
+
+    <item
+        android:id="@+id/nav_logout"
+        android:title="Logout" />
 </menu>

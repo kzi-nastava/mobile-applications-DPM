@@ -5,15 +5,30 @@
     android:layout_height="match_parent"
     android:padding="12dp">
 
-    <!-- FILTER -->
-    <Button
-        android:id="@+id/btnPickDate"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/dark_blue"
-        android:text="Filter by date" />
+        android:layout_marginBottom="8dp"
+        android:gravity="start"
+        android:layout_gravity="start">
 
-    <!-- LISTA VOŽNJI -->
+        <Button
+            android:id="@+id/btnPickDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/dark_blue"
+            android:text="Filter by date" />
+
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/orange"
+            android:text="Reset" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerRides"
         android:layout_width="match_parent"

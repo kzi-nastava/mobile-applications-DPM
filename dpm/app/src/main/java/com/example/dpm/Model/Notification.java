@@ -1,0 +1,17 @@
+package com.example.dpm.Model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Notification {
+
+    private String id;
+    private String  userId;
+    private String message;
+    private boolean read;
+    private long createdAt;
+}

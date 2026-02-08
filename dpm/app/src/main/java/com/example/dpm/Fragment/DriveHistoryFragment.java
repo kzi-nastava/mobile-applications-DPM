@@ -11,23 +11,26 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.dpm.Adapter.DriveHistoryAdapter;
-import com.example.dpm.Model.DriveHistory;
-import com.example.dpm.Model.Passenger;
+import com.example.dpm.Adapter.RideAdapter;
+
+import com.example.dpm.Model.Ride;
 import com.example.dpm.R;
+import com.example.dpm.Repository.RideRepository;
+import com.example.dpm.Session.UserSession;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
 public class DriveHistoryFragment extends Fragment {
     RecyclerView recyclerView;
-    Button btnPickDate;
-    List<DriveHistory> allDrives = new ArrayList<>();
-    List<DriveHistory> filteredDrives = new ArrayList<>();
-    DriveHistoryAdapter adapter;
+    Button btnPickDate, btnReset;
+    List<Ride> allDrives = new ArrayList<>();
+    List<Ride> filteredDrives = new ArrayList<>();
+    RideAdapter adapter;
+    UserSession session = UserSession.getInstance();
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -36,27 +39,42 @@ public class DriveHistoryFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerRides);
         btnPickDate = view.findViewById(R.id.btnPickDate);
+        btnReset = view.findViewById(R.id.btnReset);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // HARD-CODED DATA (kasnije menjaš iz baze)
-        allDrives.add(new DriveHistory("20.12.2025 10:00", "20.12.2025 10:30", "Airport", "Center", false, "-", 1500, false, Arrays.asList(
-                new Passenger("Petar", "Petrović"),
-                new Passenger("Marko", "Marković")
-        )));
-        allDrives.add(new DriveHistory("25.12.2025 12:00", "25.12.2025 12:15", "Mall", "Station", true, "PASSENGER", 0, false,  Arrays.asList(
-                new Passenger("Jovan", "Jovanović")
-        )));
-        allDrives.add(new DriveHistory("29.12.2025 23:30", "30.12.2025 01:45", "Novi Sad", "Belgrade", false, "-", 3200, true,  Arrays.asList(
-                new Passenger("Nikola", "Jokić")
-        )));
 
-        filteredDrives.addAll(allDrives);
+        filteredDrives.clear();
+        allDrives.clear();
 
-        adapter = new DriveHistoryAdapter(filteredDrives);
+        adapter = new RideAdapter(filteredDrives);
         recyclerView.setAdapter(adapter);
 
+        RideRepository rideRepository = new RideRepository();
+
+
+        if (session.getUser() != null) {
+            String driverId = session.getUser().getId();
+
+            rideRepository.getPastRidesByDriver(driverId, drives -> {
+                if (drives != null) {
+                    allDrives.addAll(drives);
+                    filteredDrives.addAll(drives);
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        }
+
+
         btnPickDate.setOnClickListener(v -> showDatePicker());
+
+        btnReset.setOnClickListener(v -> {
+            if (filteredDrives.size() != allDrives.size()) {
+                filteredDrives.clear();
+                filteredDrives.addAll(allDrives);
+                adapter.notifyDataSetChanged();
+            }
+        });
 
         return view;
     }
@@ -66,6 +84,7 @@ public class DriveHistoryFragment extends Fragment {
 
         DatePickerDialog dialog = new DatePickerDialog(
                 getContext(),
+                R.style.MyDatePickerDialog,
                 (view, year, month, day) -> {
 
                     String selectedDate = String.format(
@@ -88,9 +107,9 @@ public class DriveHistoryFragment extends Fragment {
 
         filteredDrives.clear();
 
-        for (DriveHistory r : allDrives) {
-            String startDate = r.startTime.split(" ")[0];
-            String endDate = r.endTime.split(" ")[0];
+        for (Ride r : allDrives) {
+            String startDate = r.getStartTime().split(" ")[0];
+            String endDate = r.getEndTime().split(" ")[0];
 
             if (selectedDate.equals(startDate) || selectedDate.equals(endDate)) {
                 filteredDrives.add(r);
