@@ -67,16 +67,16 @@ public class ChangePasswordFragment extends Fragment {
                     oldPassword,
                     newPassword,
                     aVoid -> {
-                        Toast.makeText(getContext(), "Šifra uspešno promenjena", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Password successfully changed", Toast.LENGTH_SHORT).show();
                         ((EditText) view.findViewById(R.id.etOldPassword)).setText("");
                         ((EditText) view.findViewById(R.id.etNewPassword)).setText("");
                         ((EditText) view.findViewById(R.id.etRepeatNewPassword)).setText("");
                     },
-                    e -> Toast.makeText(getContext(), "Pogrešno unešena stara šifra", Toast.LENGTH_LONG).show()
+                    e -> Toast.makeText(getContext(), "Old password entered incorrectly", Toast.LENGTH_LONG).show()
             );
         }
         else {
-            Toast.makeText(getContext(), "Nisu iste nove šifre", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "New passwords aren't same", Toast.LENGTH_SHORT).show();
         }
     }
 
