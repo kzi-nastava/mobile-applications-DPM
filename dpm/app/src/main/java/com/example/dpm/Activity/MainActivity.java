@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.ProfileFragment;
@@ -114,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
+            if(item.getItemId() == R.id.nav_blocking_users) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminUsersFragment()).commit();
+            }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -136,11 +140,16 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_login).setVisible(!loggedIn);
         menu.findItem(R.id.nav_register).setVisible(!loggedIn);
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
+        menu.findItem(R.id.nav_blocking_users).setVisible(false);
 
         if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
             menu.findItem(R.id.nav_history).setVisible(true);
         } else {
             menu.findItem(R.id.nav_history).setVisible(false);
+        }
+
+        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.ADMIN) {
+            menu.findItem(R.id.nav_blocking_users).setVisible(true);
         }
     }
 
