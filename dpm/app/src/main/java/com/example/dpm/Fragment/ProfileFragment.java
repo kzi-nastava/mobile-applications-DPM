@@ -1,9 +1,11 @@
 package com.example.dpm.Fragment;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,11 +34,13 @@ import com.example.dpm.Model.User;
 import com.example.dpm.Model.Driver;
 import com.example.dpm.Repository.UserRepository;
 
+import com.example.dpm.Util.ImageUtil;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.bumptech.glide.Glide;
 
+import java.io.IOException;
 
 
 public class ProfileFragment extends Fragment {
@@ -141,11 +145,8 @@ public class ProfileFragment extends Fragment {
                 !url.trim().isEmpty() &&
                 !url.trim().equalsIgnoreCase("DEFAULT")) {
 
-            Glide.with(view.getContext())
-                    .load(url)
-                    .placeholder(R.drawable.profile_icon)
-                    .error(R.drawable.profile_icon)
-                    .into(imgProfile);
+            Bitmap bitmap = ImageUtil.base64ToBitmap(url);
+            imgProfile.setImageBitmap(bitmap);
         }
     }
     public void fillDriverFields(View view, Driver driver) {
@@ -279,42 +280,48 @@ public class ProfileFragment extends Fragment {
             return;
         }
 
-        StorageReference ref = FirebaseStorage.getInstance()
-                .getReference()
-                .child("profile_images/" + loggedInUser.getId() + ".jpg");
+        try {
+            // 1️⃣ Uri -> Bitmap
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+                    requireContext().getContentResolver(),
+                    imageUri
+            );
 
-        ref.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        ref.getDownloadUrl().addOnSuccessListener(uri -> {
+            // 2️⃣ Bitmap -> Base64 String
+            String imageBase64 = ImageUtil.bitmapToBase64(bitmap);
 
-                            String imageUrl = uri.toString();
+            // 3️⃣ upis u Firestore
+            FirebaseProvider.getDb()
+                    .collection("users")
+                    .document(loggedInUser.getId())
+                    .update("profileImageUrl", imageBase64)
+                    .addOnSuccessListener(unused -> {
 
-                            FirebaseProvider.getDb()
-                                    .collection("users")
-                                    .document(loggedInUser.getId())
-                                    .update("profileImageUrl", imageUrl)
-                                    .addOnSuccessListener(unused -> {
+                        Toast.makeText(getContext(),
+                                "Profile image updated!",
+                                Toast.LENGTH_SHORT).show();
 
-                                        Toast.makeText(getContext(),
-                                                "Profile image updated!",
-                                                Toast.LENGTH_SHORT).show();
+                        // 4️⃣ ostaje slika u ImageView
+                        imgProfile.setImageBitmap(bitmap);
 
-                                        userRepository.getUserById(
-                                                loggedInUser.getId(),
-                                                user -> {
-                                                    UserSession.getInstance().setUser(user);
-                                                    Glide.with(getContext())
-                                                            .load(user.getProfileImageUrl())
-                                                            .into(imgProfile);
-                                                }
-                                        );
-                                    });
-                        })
-                )
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                        // update session
+                        loggedInUser.setProfileImageUrl(imageBase64);
+                        UserSession.getInstance().setUser(loggedInUser);
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(getContext(),
+                                    e.getMessage(),
+                                    Toast.LENGTH_LONG).show()
+                    );
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(),
+                    "Failed to process image",
+                    Toast.LENGTH_LONG).show();
+        }
     }
+
 
 
 }

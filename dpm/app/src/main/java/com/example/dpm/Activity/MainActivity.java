@@ -16,6 +16,7 @@ import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.ProfileFragment;
+import com.example.dpm.Fragment.RideReportFragment;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
 import com.example.dpm.Session.UserSession;
@@ -118,6 +119,9 @@ public class MainActivity extends AppCompatActivity {
             if(item.getItemId() == R.id.nav_blocking_users) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminUsersFragment()).commit();
             }
+            if(item.getItemId() == R.id.nav_report_generation) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new RideReportFragment()).commit();
+            }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -141,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_register).setVisible(!loggedIn);
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
         menu.findItem(R.id.nav_blocking_users).setVisible(false);
+        menu.findItem(R.id.nav_report_generation).setVisible(loggedIn);
 
         if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
             menu.findItem(R.id.nav_history).setVisible(true);

@@ -16,6 +16,12 @@
         />
 
     <item
+        android:id="@+id/nav_report_generation"
+        android:title="Reports generation"
+        />
+
+
+    <item
         android:id="@+id/nav_blocking_users"
         android:title="Users block list"
         />
