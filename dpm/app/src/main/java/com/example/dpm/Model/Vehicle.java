@@ -16,15 +16,13 @@ public class Vehicle {
 
     @DocumentId
     private String id;
-
     private boolean babyFriendly;
     private boolean petFriendly;
     private boolean busy;
-
     private String driverId;
     private String model;
     private String plateNumber;
-
+    private VehicleType type;
     private int seats;
     private double latitude;
     private double longitude;

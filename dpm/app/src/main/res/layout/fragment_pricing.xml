@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    >
+
+    <!-- TITLE -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pricing"
+        android:textStyle="bold"
+        android:textSize="25sp"
+        android:paddingBottom="8dp" />
+
+    <!-- PRICE PER KM CARD -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/white"
+        app:strokeColor="@color/dark_blue"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Price per kilometer"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:paddingBottom="6dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPricePerKm"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:inputType="number"
+                    android:padding="10dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- BASE FARE CARD -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/white"
+        app:strokeColor="@color/dark_blue">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Base fare by vehicle type"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:paddingBottom="6dp" />
+
+            <!-- Standard -->
+            <TextView
+                android:text="Standard"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:paddingTop="4dp"
+                android:paddingBottom="2dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="@color/light_blue">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBaseStandard"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:inputType="number"
+                    android:padding="8dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Luxury -->
+            <TextView
+                android:text="Luxury"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:paddingTop="6dp"
+                android:paddingBottom="2dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="@color/light_blue">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBaseLuxury"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:inputType="number"
+                    android:padding="8dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Van -->
+            <TextView
+                android:text="Van"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:paddingTop="6dp"
+                android:paddingBottom="2dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="@color/light_blue">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBaseVan"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:inputType="number"
+                    android:padding="8dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- SAVE BUTTON -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSavePricing"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Save"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        app:backgroundTint="@color/orange"
+        app:cornerRadius="12dp" />
+
+</LinearLayout>

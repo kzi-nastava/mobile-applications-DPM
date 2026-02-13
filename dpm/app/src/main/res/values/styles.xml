@@ -4,4 +4,11 @@
         <item name="colorPrimary">@color/dark_blue</item>
         <item name="colorAccent">@color/dark_blue</item>
     </style>
+
+    <style name="MyOutlinedTextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <item name="boxStrokeColor">@color/light_blue</item>
+        <item name="hintTextColor">@color/light_blue</item>
+
+    </style>
 </resources>
