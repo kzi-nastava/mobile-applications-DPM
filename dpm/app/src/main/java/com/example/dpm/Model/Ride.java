@@ -22,7 +22,7 @@ public class Ride {
 
     private Integer distance;
     private double price;
-
+    private RidePricingSnapshot pricingSnapshot;
     private String cancelReason;
     private String cancelledBy;
 

@@ -20,6 +20,10 @@
         android:title="Reports generation"
         />
 
+    <item
+        android:id="@+id/nav_pricing"
+        android:title="Edit prices"
+        />
 
     <item
         android:id="@+id/nav_blocking_users"

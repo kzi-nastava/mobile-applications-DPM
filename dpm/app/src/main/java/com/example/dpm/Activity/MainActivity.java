@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.HomePageFragment;
+import com.example.dpm.Fragment.PricingFragment;
 import com.example.dpm.Fragment.ProfileFragment;
 import com.example.dpm.Fragment.RideReportFragment;
 import com.example.dpm.Model.UserRole;
@@ -106,6 +107,9 @@ public class MainActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.nav_history) {
                 getSupportFragmentManager().beginTransaction().replace( R.id.frameLayout, new DriveHistoryFragment()).commit();
             }
+            if (item.getItemId() == R.id.nav_pricing) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PricingFragment()).commit();
+            }
             if (item.getItemId() == R.id.nav_logout) {
 
                 FirebaseAuth.getInstance().signOut();
@@ -146,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
         menu.findItem(R.id.nav_blocking_users).setVisible(false);
         menu.findItem(R.id.nav_report_generation).setVisible(loggedIn);
+        menu.findItem(R.id.nav_pricing).setVisible(false);
 
         if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
             menu.findItem(R.id.nav_history).setVisible(true);
@@ -155,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.ADMIN) {
             menu.findItem(R.id.nav_blocking_users).setVisible(true);
+            menu.findItem(R.id.nav_pricing).setVisible(true);
         }
     }
 
