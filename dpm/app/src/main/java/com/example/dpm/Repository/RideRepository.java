@@ -27,13 +27,20 @@ public class RideRepository {
         );
     }
     public void getPastRidesByDriver(String driverId, OnSuccessListener<List<Ride>> listener) {
-            db.collection("ride").whereEqualTo("driverId", driverId).whereEqualTo("status", RideStatus.FINISHED)
-                    .get()
+            db.collection("ride").whereEqualTo("driverId", driverId).whereEqualTo("status", RideStatus.FINISHED).get()
                     .addOnSuccessListener(snapshot -> {
 
                         List<Ride> result = snapshot.toObjects(Ride.class);
                         listener.onSuccess(result);
                     });
+    }
+
+    public void getActiveRideForDriver(String driverId, OnSuccessListener<Ride> listener) {
+        db.collection("ride").whereEqualTo("driverId", driverId).whereEqualTo("status", "STARTED").limit(1).get()
+                .addOnSuccessListener(qs -> {
+                    if (qs.isEmpty()) listener.onSuccess(null);
+                    else listener.onSuccess(qs.getDocuments().get(0).toObject(Ride.class));
+                });
     }
 
 }
