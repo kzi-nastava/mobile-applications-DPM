@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="LIVE RIDE STATUS"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:paddingBottom="8dp" />
+
+    <!-- Select driver -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:strokeColor="@color/light_blue"
+        app:strokeWidth="1dp"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select driver"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:paddingBottom="6dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDriver"
+                style="@style/MyOutlinedTextInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Driver"
+                app:endIconMode="dropdown_menu">
+
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/actDriver"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:inputType="none"
+                    android:padding="8dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnApplyDriver"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Apply"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/orange"
+                app:cornerRadius="12dp"
+                android:layout_marginTop="10dp" />
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Result -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardRideInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:strokeColor="@color/light_blue"
+        app:strokeWidth="1dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Current ride"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:paddingBottom="6dp"/>
+
+            <TextView
+                android:id="@+id/tvRideInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Info..."
+                android:textSize="14sp"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tvNoRide"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This driver is not currently driving."
+        android:textStyle="italic"
+        android:textSize="14sp"
+        android:paddingTop="6dp"
+        android:visibility="gone"/>
+
+</LinearLayout>

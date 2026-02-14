@@ -21,6 +21,23 @@ public class VehicleRepository {
         );
     }
 
+    public void getVehicleById(String vehicleId, OnSuccessListener<Vehicle> listener) {
+        db.collection("vehicles")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<Vehicle> vehicles = snapshot.toObjects(Vehicle.class);
+
+                    for (Vehicle v : vehicles) {
+                        if (v.getId() != null && v.getId().trim().equals(vehicleId.trim())) {
+                            listener.onSuccess(v);
+                            return;
+                        }
+                    }
+
+                    listener.onSuccess(null);
+                });
+    }
+
     public void getVehiclesByUserId(String userId, OnSuccessListener<List<Vehicle>> listener) {
         db.collection("vehicles")
                 .whereEqualTo("userId", userId)
@@ -42,6 +59,8 @@ public class VehicleRepository {
                     }
                 });
     }
+
+
 
     public void updateVehicle(Vehicle vehicle) {
         db.collection("vehicles")

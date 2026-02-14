@@ -26,10 +26,9 @@ public class UserRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    // 🔹 Dobavi sve korisnike (Admin, Driver, Passenger)
+
     public void getAllUsers(OnSuccessListener<List<User>> listener) {
-        db.collection("users")
-                .get()
+        db.collection("users").get()
                 .addOnSuccessListener(snapshot -> {
                     List<User> users = new ArrayList<>();
 
@@ -43,11 +42,8 @@ public class UserRepository {
                 });
     }
 
-    // 🔹 Dobavi korisnika po ID-u
     public void getUserById(String userId, OnSuccessListener<User> listener) {
-        db.collection("users")
-                .document(userId)
-                .get()
+        db.collection("users").document(userId).get()
                 .addOnSuccessListener(doc -> {
                     if (!doc.exists()) {
                         listener.onSuccess(null);
@@ -57,12 +53,9 @@ public class UserRepository {
                 });
     }
 
-    // 🔹 Dobavi korisnika po email-u
+
     public void getUserByEmail(String email, OnSuccessListener<User> listener) {
-        db.collection("users")
-                .whereEqualTo("email", email)
-                .limit(1)
-                .get()
+        db.collection("users").whereEqualTo("email", email).limit(1).get()
                 .addOnSuccessListener(snapshot -> {
                     if (snapshot.isEmpty()) {
                         listener.onSuccess(null);
@@ -72,7 +65,12 @@ public class UserRepository {
                 });
     }
 
-    // 🔧 Interna metoda – mapiranje po role
+    public void getAllDrivers(OnSuccessListener<List<User>> listener) {
+        db.collection("users").whereEqualTo("role", "DRIVER").get()
+                .addOnSuccessListener(snapshot ->
+                        listener.onSuccess(snapshot.toObjects(User.class))
+                );
+    }
     private User mapToConcreteUser(DocumentSnapshot doc) {
 
         String roleStr = doc.getString("role");
@@ -98,17 +96,7 @@ public class UserRepository {
         return user;
     }
 
-    public void updateUserData(String userId,
-                               String city,
-                               String country,
-                               String street,
-                               String number,
-                               String email,
-                               String firstName,
-                               String lastName,
-                               String phoneNumber,
-                               OnSuccessListener<Void> onSuccess,
-                               OnFailureListener onFailure) {
+    public void updateUserData(String userId, String city, String country, String street, String number, String email, String firstName, String lastName, String phoneNumber, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
         Map<String, Object> updates = new HashMap<>();
 
@@ -128,11 +116,7 @@ public class UserRepository {
                 .addOnFailureListener(onFailure);
     }
 
-    public void reauthenticateAndChangePassword(String email,
-                                                String oldPassword,
-                                                String newPassword,
-                                                OnSuccessListener<Void> onSuccess,
-                                                OnFailureListener onFailure) {
+    public void reauthenticateAndChangePassword(String email, String oldPassword, String newPassword, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
