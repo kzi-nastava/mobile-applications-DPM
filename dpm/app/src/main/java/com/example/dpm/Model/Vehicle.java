@@ -27,6 +27,8 @@ public class Vehicle {
     private double latitude;
     private double longitude;
 
+    private VehicleType type;
+
     public GeoPoint getPosition() {
         return new GeoPoint(latitude, longitude);
     }

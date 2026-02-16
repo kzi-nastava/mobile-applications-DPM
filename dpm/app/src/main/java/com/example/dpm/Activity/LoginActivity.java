@@ -111,7 +111,7 @@ public class LoginActivity extends AppCompatActivity {
                         vehicle.setBusy(false);
                         vehicleRepository.updateVehicle(vehicle);
                     }
-
+                    driverRepository.activateDriver(driver);
                     handleLoginSuccess(driver);
                 });
 

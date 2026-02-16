@@ -139,6 +139,9 @@ public class MainActivity extends AppCompatActivity {
             if(item.getItemId() == R.id.nav_report_generation) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new RideReportFragment()).commit();
             }
+            if(item.getItemId() == R.id.nav_register_new_driver) {
+                startActivity(new Intent(this, RegisterDriverActivity.class));
+            }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -160,7 +163,6 @@ public class MainActivity extends AppCompatActivity {
 
         menu.findItem(R.id.nav_login).setVisible(!loggedIn);
         menu.findItem(R.id.nav_register).setVisible(!loggedIn);
-        menu.findItem(R.id.nav_logout).setVisible(loggedIn);
         menu.findItem(R.id.nav_blocking_users).setVisible(false);
         menu.findItem(R.id.nav_report_generation).setVisible(loggedIn);
         menu.findItem(R.id.nav_pricing).setVisible(false);
@@ -168,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_support_chat).setVisible(false);
         menu.findItem(R.id.nav_support_inbox).setVisible(false);
 
+        menu.findItem(R.id.nav_register_new_driver).setVisible(false);
+        menu.findItem(R.id.nav_logout).setVisible(loggedIn);
 
         if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
             menu.findItem(R.id.nav_history).setVisible(true);
@@ -180,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.nav_pricing).setVisible(true);
                 menu.findItem(R.id.nav_view_rides).setVisible(true);
                 menu.findItem(R.id.nav_support_inbox).setVisible(true);
+                menu.findItem(R.id.nav_register_new_driver).setVisible(true);
             } else {
                 menu.findItem(R.id.nav_support_chat).setVisible(true);
             }
