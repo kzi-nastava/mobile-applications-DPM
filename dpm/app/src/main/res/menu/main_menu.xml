@@ -34,6 +34,10 @@
         android:title="Users block list" />
 
     <item
+        android:id="@+id/nav_change_data_requests"
+        android:title="Requests for change data" />
+
+    <item
         android:id="@+id/nav_support_chat"
         android:title="Support" />
 

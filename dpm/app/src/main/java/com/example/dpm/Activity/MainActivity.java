@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.example.dpm.Fragment.AdminChangeDataRequestsFragment;
 import com.example.dpm.Fragment.AdminChatListFragment;
 import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
@@ -136,6 +137,9 @@ public class MainActivity extends AppCompatActivity {
             if(item.getItemId() == R.id.nav_blocking_users) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminUsersFragment()).commit();
             }
+            if(item.getItemId() == R.id.nav_change_data_requests) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminChangeDataRequestsFragment()).commit();
+            }
             if(item.getItemId() == R.id.nav_report_generation) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new RideReportFragment()).commit();
             }
@@ -164,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_login).setVisible(!loggedIn);
         menu.findItem(R.id.nav_register).setVisible(!loggedIn);
         menu.findItem(R.id.nav_blocking_users).setVisible(false);
+        menu.findItem(R.id.nav_change_data_requests).setVisible(false);
         menu.findItem(R.id.nav_report_generation).setVisible(loggedIn);
         menu.findItem(R.id.nav_pricing).setVisible(false);
         menu.findItem(R.id.nav_view_rides).setVisible(false);
@@ -185,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.nav_view_rides).setVisible(true);
                 menu.findItem(R.id.nav_support_inbox).setVisible(true);
                 menu.findItem(R.id.nav_register_new_driver).setVisible(true);
+                menu.findItem(R.id.nav_change_data_requests).setVisible(true);
             } else {
                 menu.findItem(R.id.nav_support_chat).setVisible(true);
             }

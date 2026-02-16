@@ -36,6 +36,9 @@
         <activity android:name=".Activity.ResetPasswordActivity" />
         <activity android:name=".Activity.ActivationPendingActivity" />
         <activity android:name=".Activity.RegisterDriverActivity" />
+        <activity
+            android:name=".Activity.ChangeDataRequestDetailsActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>

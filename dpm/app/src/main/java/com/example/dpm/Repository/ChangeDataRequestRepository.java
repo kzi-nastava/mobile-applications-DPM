@@ -14,8 +14,11 @@ public class ChangeDataRequestRepository {
     private final FirebaseFirestore db;
     private static final String COLLECTION_NAME = "change_data_requests";
 
+    private UserRepository userRepository;
+
     public ChangeDataRequestRepository() {
         db = FirebaseFirestore.getInstance();
+        userRepository = new UserRepository();
     }
 
     // CREATE
@@ -99,6 +102,24 @@ public class ChangeDataRequestRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    public void updateUser(ChangeDataRequest request,
+                       OnSuccessListener<Void> onSuccess,
+                       OnFailureListener onFailure) {
+        userRepository.updateUserData(
+                request.getUserId(),
+                request.getCity(),
+                request.getCountry(),
+                request.getStreet(),
+                request.getNumber(),
+                request.getEmail(),
+                request.getFirstName(),
+                request.getLastName(),
+                request.getPhoneNumber(),
+                onSuccess,
+                onFailure
+        );
+    }
+
     // DELETE
     public void delete(String id,
                        OnSuccessListener<Void> onSuccess,
@@ -108,6 +129,26 @@ public class ChangeDataRequestRepository {
                 .document(id)
                 .delete()
                 .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
+    public void getPendingRequests(
+            OnSuccessListener<List<ChangeDataRequest>> onSuccess,
+            OnFailureListener onFailure
+    ) {
+        db.collection(COLLECTION_NAME)
+                .whereEqualTo("requestStatus", RequestStatus.PENDING.name())
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<ChangeDataRequest> list = snapshot.toObjects(ChangeDataRequest.class);
+
+                    // obavezno setuj ID (Firestore toObjects ne radi automatski)
+                    for (int i = 0; i < list.size(); i++) {
+                        list.get(i).setId(snapshot.getDocuments().get(i).getId());
+                    }
+
+                    onSuccess.onSuccess(list);
+                })
                 .addOnFailureListener(onFailure);
     }
 }
