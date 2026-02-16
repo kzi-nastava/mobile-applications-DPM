@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">dpm</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string-array name="vehicle_types">
+        <item>Select vehicle type</item>
+        <item>Standard</item>
+        <item>Luxury</item>
+        <item>Van</item>
+    </string-array>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

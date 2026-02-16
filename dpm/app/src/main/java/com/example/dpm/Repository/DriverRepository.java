@@ -3,6 +3,8 @@ package com.example.dpm.Repository;
 
 import com.example.dpm.Model.Driver;
 import com.example.dpm.Model.UserRole;
+import com.example.dpm.Model.Vehicle;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -48,4 +50,12 @@ public class DriverRepository {
                     listener.onSuccess(doc.toObject(Driver.class));
                 });
     }
+
+    public void activateDriver(Driver driver) {
+        driver.setActive(true);
+        db.collection("users")
+                .document(driver.getId())
+                .set(driver);
+    }
+
 }

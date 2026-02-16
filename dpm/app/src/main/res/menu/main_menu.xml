@@ -13,6 +13,11 @@
         android:title="Register" />
 
     <item
+        android:id="@+id/nav_register_new_driver"
+        android:title="Register new driver"
+        />
+
+    <item
         android:id="@+id/nav_report_generation"
         android:title="Reports generation" />
 

@@ -1,7 +1,12 @@
 package com.example.dpm.Repository;
 
+import android.widget.Toast;
+
+import com.example.dpm.Model.Driver;
 import com.example.dpm.Model.FirebaseProvider;
+import com.example.dpm.Model.UserRole;
 import com.example.dpm.Model.Vehicle;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -66,5 +71,13 @@ public class VehicleRepository {
         db.collection("vehicles")
                 .document(vehicle.getId())
                 .set(vehicle);
+    }
+
+    public void addVehicle(Vehicle vehicle) {
+        db.collection("vehicles")
+                .add(vehicle)
+                .addOnSuccessListener(docRef -> {
+                    vehicle.setId(docRef.getId());
+                });
     }
 }

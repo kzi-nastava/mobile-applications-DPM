@@ -277,7 +277,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="24dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:id="@+id/passenger_login">
 
                 <TextView
                     android:id="@+id/already_have_account"
@@ -297,6 +298,83 @@
                     android:textSize="16sp"
                     android:layout_weight="0" />
             </LinearLayout>
+
+            <!-- DRIVER VEHICLE SECTION -->
+            <LinearLayout
+                android:id="@+id/driver_vehicle_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vehicle information"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/orange"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Vehicle model -->
+                <EditText
+                    android:id="@+id/vehicle_model_input"
+                    android:layout_width="348dp"
+                    android:layout_height="37dp"
+                    android:background="@drawable/input_background"
+                    android:hint="Vehicle model"
+                    android:paddingLeft="10dp" />
+
+                <!-- Vehicle type -->
+                <Spinner
+                    android:id="@+id/vehicle_type_spinner"
+                    android:layout_width="348dp"
+                    android:layout_height="37dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/input_background" />
+
+                <!-- License plate -->
+                <EditText
+                    android:id="@+id/vehicle_plate_input"
+                    android:layout_width="348dp"
+                    android:layout_height="37dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/input_background"
+                    android:hint="License plate"
+                    android:paddingLeft="10dp" />
+
+                <!-- Number of seats -->
+                <EditText
+                    android:id="@+id/vehicle_seats_input"
+                    android:layout_width="348dp"
+                    android:layout_height="37dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/input_background"
+                    android:hint="Number of seats"
+                    android:inputType="number"
+                    android:paddingLeft="10dp" />
+
+                <!-- Baby transport -->
+                <CheckBox
+                    android:id="@+id/vehicle_baby_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Allows baby transport"
+                    android:textSize="15sp" />
+
+                <!-- Pet transport -->
+                <CheckBox
+                    android:id="@+id/vehicle_pet_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Allows pet transport"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+
 
             <Button
                 android:id="@+id/register_next_button"

@@ -35,6 +35,7 @@
         <activity android:name=".Activity.RegisterActivity" />
         <activity android:name=".Activity.ResetPasswordActivity" />
         <activity android:name=".Activity.ActivationPendingActivity" />
+        <activity android:name=".Activity.RegisterDriverActivity" />
     </application>
 
 </manifest>
