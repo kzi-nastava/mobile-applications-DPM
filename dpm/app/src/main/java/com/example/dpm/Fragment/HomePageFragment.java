@@ -24,17 +24,25 @@ import com.example.dpm.R;
 
 import com.example.dpm.Repository.DriverRepository;
 import com.example.dpm.Repository.PassengerRepository;
+import com.example.dpm.Repository.RideEstimateRepository;
 import com.example.dpm.Repository.RideRepository;
 import com.example.dpm.Repository.VehicleRepository;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import android.widget.ImageButton;
 
 public class HomePageFragment extends Fragment {
 
@@ -42,6 +50,14 @@ public class HomePageFragment extends Fragment {
     private VehicleAdapter vehicleAdapter;
     private VehicleRepository vehicleRepository;
     private MapView map;
+    private RideEstimateRepository rideEstimateRepository;
+
+    private final Set<Overlay> routeOverlays = new HashSet<>();
+    private final Set<Marker> vehicleMarkers = new HashSet<>();
+
+    private com.google.android.material.card.MaterialCardView estimateCard;
+    private android.widget.TextView tvEstimateBody;
+    private boolean routeVisible = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,6 +79,20 @@ public class HomePageFragment extends Fragment {
 
 
     }
+    private void clearRouteOverlays() {
+        for (Overlay o : routeOverlays) {
+            map.getOverlays().remove(o);
+        }
+        routeOverlays.clear();
+    }
+
+    private void clearVehicleMarkers() {
+        for (Marker m : vehicleMarkers) {
+            map.getOverlays().remove(m);
+        }
+        vehicleMarkers.clear();
+    }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -80,14 +110,101 @@ public class HomePageFragment extends Fragment {
         vehicleRepository = new VehicleRepository();
 
         loadVehicles();
+        estimateCard = view.findViewById(R.id.estimateCard);
+        tvEstimateBody = view.findViewById(R.id.tvEstimateBody);
+
+        rideEstimateRepository = new RideEstimateRepository();
+        Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
+
+        ExtendedFloatingActionButton fab = view.findViewById(R.id.fabEstimate);
+        ImageButton close = view.findViewById(R.id.btnCloseEstimate);
+        close.setOnClickListener(v -> {
+            clearRouteOverlays();
+            estimateCard.setVisibility(View.GONE);
+            routeVisible = false;
+            map.invalidate();
+        });
+        fab.setOnClickListener(v -> {
+
+            // ako ruta već postoji → samo je skloni
+            if(routeVisible){
+                clearRouteOverlays();
+                estimateCard.setVisibility(View.GONE);
+                routeVisible = false;
+                map.invalidate();
+                return;
+            }
+
+            // inače otvori dialog za procenu
+            new RideEstimateDialogFragment((from,to)->{
+
+                rideEstimateRepository.estimate(requireContext(), from, to,
+                        new RideEstimateRepository.Callback(){
+
+                            @Override
+                            public void onSuccess(com.example.dpm.Model.RideEstimate e){
+
+                                clearRouteOverlays();
+
+                                Marker start = new Marker(map);
+                                start.setPosition(e.getFromPoint());
+                                start.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                                start.setTitle("Start");
+                                start.setSnippet("Ride starting point");
+                                start.showInfoWindow();
+
+                                Marker end = new Marker(map);
+                                end.setPosition(e.getToPoint());
+                                end.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                                end.setTitle("Destination");
+                                end.setSnippet("Ride destination");
+                                end.showInfoWindow();
+
+
+                                Polyline line = new Polyline();
+                                line.setPoints(e.getRoutePoints());
+                                line.getOutlinePaint().setStrokeWidth(10f);
+
+                                map.getOverlays().add(line);
+                                map.getOverlays().add(start);
+                                map.getOverlays().add(end);
+
+                                routeOverlays.add(line);
+                                routeOverlays.add(start);
+                                routeOverlays.add(end);
+
+                                estimateCard.setVisibility(View.VISIBLE);
+                                tvEstimateBody.setText(
+                                        "Distance: "+String.format("%.2f",e.getDistanceKm())+" km\n"+
+                                                "Time: "+String.format("%.0f",e.getDurationMin())+" min"
+                                );
+
+                                routeVisible = true;
+                                map.invalidate();
+                            }
+
+                            @Override
+                            public void onError(Exception ex){
+                                estimateCard.setVisibility(View.GONE);
+                            }
+                        });
+
+            }).show(getChildFragmentManager(),"estimate");
+
+        });
+
     }
 
     private void loadVehicles() {
         try {
             vehicleRepository.getAllVehicles(vehicles -> {
                 try {
+                    clearVehicleMarkers();
+
                     for (Vehicle v : vehicles) {
                         Marker marker = new Marker(map);
+                        map.getOverlays().add(marker);
+                        vehicleMarkers.add(marker);
                         marker.setPosition(v.getPosition());
                         marker.setTitle(v.getModel());
 
