@@ -29,6 +29,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.example.dpm.Fragment.PassengerHistoryFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -109,8 +110,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RegisterActivity.class));
             }
             if (item.getItemId() == R.id.nav_history) {
-                getSupportFragmentManager().beginTransaction().replace( R.id.frameLayout, new DriveHistoryFragment()).commit();
+                if (session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER) {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriveHistoryFragment()).commit();
+                } else {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PassengerHistoryFragment()).commit();
+                }
             }
+
             if (item.getItemId() == R.id.nav_pricing) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PricingFragment()).commit();
             }
@@ -178,11 +184,13 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_register_new_driver).setVisible(false);
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
 
-        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
+        if (loggedIn && session.getUser() != null &&
+                (session.getUser().getRole() == UserRole.DRIVER || session.getUser().getRole() == UserRole.PASSENGER)) {
             menu.findItem(R.id.nav_history).setVisible(true);
         } else {
             menu.findItem(R.id.nav_history).setVisible(false);
         }
+
         if (loggedIn && session.getUser() != null) {
             if (session.getUser().getRole() == UserRole.ADMIN) {
                 menu.findItem(R.id.nav_blocking_users).setVisible(true);
