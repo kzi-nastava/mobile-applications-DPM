@@ -19,6 +19,7 @@ import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.PricingFragment;
 import com.example.dpm.Fragment.ProfileFragment;
+import com.example.dpm.Fragment.RatingDialogFragment;
 import com.example.dpm.Fragment.RideReportFragment;
 import com.example.dpm.Fragment.RideStateViewFragment;
 import com.example.dpm.Fragment.SupportChatFragment;
@@ -89,7 +90,8 @@ public class MainActivity extends AppCompatActivity {
                     ).show();
                 }
                 else {
-                    //selectedFragment = new ProfileFragment();
+//                    RatingDialogFragment dialog = RatingDialogFragment.newInstance("TEST_RIDE_ID_123");
+//                    dialog.show(getSupportFragmentManager(), "rating_dialog");
                 }
             }
 
