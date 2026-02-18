@@ -80,7 +80,10 @@ public class DriverRidesFragment extends Fragment implements DriverRidesAdapter.
         rideRepository.startRide(
                 ride.getId(),
                 ride.getScheduledAt(),
-                unused -> Toast.makeText(requireContext(), "Ride started", Toast.LENGTH_SHORT).show(),
+                unused -> {
+                    Toast.makeText(requireContext(), "Ride started", Toast.LENGTH_SHORT).show();
+                    rideRepository.notifyLinkedPassengersRideStarted(ride.getId());
+                },
                 err -> Toast.makeText(requireContext(), err.getMessage(), Toast.LENGTH_SHORT).show()
         );
     }
@@ -89,7 +92,10 @@ public class DriverRidesFragment extends Fragment implements DriverRidesAdapter.
     public void onFinishRide(Ride ride) {
         rideRepository.finishRide(
                 ride.getId(),
-                unused -> Toast.makeText(requireContext(), "Ride finished", Toast.LENGTH_SHORT).show(),
+                unused ->{
+                    Toast.makeText(requireContext(), "Ride finished", Toast.LENGTH_SHORT).show();
+                    rideRepository.notifyLinkedPassengersRideFinished(ride.getId());
+                },
                 err -> Toast.makeText(requireContext(), err.getMessage(), Toast.LENGTH_SHORT).show()
         );
     }

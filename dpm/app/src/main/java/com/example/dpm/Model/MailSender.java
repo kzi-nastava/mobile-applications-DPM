@@ -39,7 +39,7 @@ public class MailSender {
                 Transport.send(message);
 
             } catch (Exception e) {
-                e.printStackTrace();
+                android.util.Log.e("MAIL", "Send failed: " + e.getMessage(), e);
             }
         }).start();
     }

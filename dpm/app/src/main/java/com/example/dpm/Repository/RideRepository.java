@@ -3,6 +3,10 @@ package com.example.dpm.Repository;
 
 import static android.provider.Settings.System.DATE_FORMAT;
 
+import android.net.Uri;
+
+import com.example.dpm.Model.MailSender;
+import com.example.dpm.Model.Notification;
 import com.example.dpm.Model.Ride;
 import com.example.dpm.Model.RideStatus;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -28,6 +32,9 @@ public class RideRepository {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final String DATE_FORMAT = "dd.MM.yyyy HH:mm";
+    NotificationRepository notificationRepository = new NotificationRepository();
+    private PassengerRepository passengerRepository = new PassengerRepository();
+    private UserRepository userRepository = new UserRepository();
     public void addRide(Ride ride) {
         db.collection("ride").document(ride.getId()).set(ride);
     }
@@ -248,6 +255,86 @@ public class RideRepository {
             listener.onSuccess(new ArrayList<>(unique.values()));
 
         }).addOnFailureListener(e -> listener.onSuccess(new ArrayList<>()));
+    }
+
+    public void notifyLinkedPassengersRideStarted(String rideId) {
+
+        db.collection("ride").document(rideId).get()
+                .addOnSuccessListener(doc -> {
+
+                    if (!doc.exists()) return;
+
+                    List<String> linkedIds = (List<String>) doc.get("linkedPassengerIds");
+
+                    if (linkedIds == null || linkedIds.isEmpty()) return;
+
+                    String link = "myapp://ride?rideId=" + Uri.encode(rideId);
+
+                    for (String passengerId : linkedIds) {
+
+
+                        userRepository.getUserById(passengerId, passenger -> {
+                            if (passenger == null || passenger.getEmail() == null) return;
+
+                            String subject = "Vožnja je započeta";
+                            String body =
+                                    "Dodati ste na vožnju.\n" +
+                                            "Vožnja je započeta.\n\n" +
+                                            "Praćenje vožnje:\n" + link;
+
+                            MailSender.sendTextMail(passenger.getEmail(), subject, body);
+                        });
+
+                        // NOTIF SAMO REGISTROVANIM (pošto imamo ID u bazi)
+                        Notification n = new Notification();
+                        n.setUserId(passengerId);
+                        n.setMessage("Vožnja je prihvaćena. Kliknite za praćenje.");
+                        n.setRead(false);
+                        n.setCreatedAt(System.currentTimeMillis());
+                        n.setType("RIDE_ACCEPTED");
+                        n.setRideId(rideId);
+
+                        notificationRepository.createNotification(n);
+                    }
+                });
+    }
+
+    public void notifyLinkedPassengersRideFinished(String rideId) {
+
+        db.collection("ride").document(rideId).get()
+                .addOnSuccessListener(doc -> {
+
+                    if (!doc.exists()) return;
+
+                    List<String> linkedIds = (List<String>) doc.get("linkedPassengerIds");
+
+                    if (linkedIds == null || linkedIds.isEmpty()) return;
+
+                    for (String passengerId : linkedIds) {
+
+                        userRepository.getUserById(passengerId, passenger -> {
+                            if (passenger == null || passenger.getEmail() == null) return;
+
+                            String subject = "Vožnja je završena";
+                            String body =
+                                    "Vožnja je uspešno završena.\n" +
+                                            "Hvala što koristite aplikaciju.";
+
+                            MailSender.sendTextMail(passenger.getEmail(), subject, body);
+                        });
+
+                        // NOTIF (bez linka)
+                        Notification n = new Notification();
+                        n.setUserId(passengerId);
+                        n.setMessage("Vožnja je uspešno završena.");
+                        n.setRead(false);
+                        n.setCreatedAt(System.currentTimeMillis());
+                        n.setType("RIDE_FINISHED");
+                        n.setRideId(rideId);
+
+                        notificationRepository.createNotification(n);
+                    }
+                });
     }
     private Date parseDateOrNull(String s) {
         if (s == null || s.trim().isEmpty()) return null;
