@@ -12,7 +12,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.HashMap;
+import java.util.Map;
 public class RideRepository {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -42,5 +46,42 @@ public class RideRepository {
                     else listener.onSuccess(qs.getDocuments().get(0).toObject(Ride.class));
                 });
     }
+    public void getPastRidesByPassenger(String passengerId, OnSuccessListener<List<Ride>> listener) {
+
+        var q1 = db.collection("ride")
+                .whereEqualTo("passengerId", passengerId)
+                .whereEqualTo("status", RideStatus.FINISHED)
+                .get();
+
+        var q2 = db.collection("ride")
+                .whereArrayContains("linkedPassengerIds", passengerId)
+                .whereEqualTo("status", RideStatus.FINISHED)
+                .get();
+
+        Tasks.whenAllSuccess(q1, q2).addOnSuccessListener(results -> {
+
+            Map<String, Ride> unique = new HashMap<>();
+
+            QuerySnapshot s1 = (QuerySnapshot) results.get(0);
+            QuerySnapshot s2 = (QuerySnapshot) results.get(1);
+
+            for (Ride r : s1.toObjects(Ride.class)) unique.put(r.getId(), r);
+            for (Ride r : s2.toObjects(Ride.class)) unique.put(r.getId(), r);
+
+            listener.onSuccess(new ArrayList<>(unique.values()));
+        }).addOnFailureListener(e -> listener.onSuccess(new ArrayList<>()));
+    }
+    public void getRideById(String id, OnSuccessListener<Ride> listener){
+        db.collection("ride").document(id).get()
+                .addOnSuccessListener(doc -> {
+                    if(doc.exists()){
+                        Ride r = doc.toObject(Ride.class);
+                        listener.onSuccess(r);
+                    } else {
+                        listener.onSuccess(null);
+                    }
+                });
+    }
+
 
 }

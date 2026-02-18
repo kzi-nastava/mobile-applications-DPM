@@ -27,6 +27,15 @@
             android:layout_marginStart="8dp"
             android:backgroundTint="@color/orange"
             android:text="Reset" />
+
+        <Button
+            android:id="@+id/btnSort"
+            android:text="Sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/light_blue"/>
+
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
