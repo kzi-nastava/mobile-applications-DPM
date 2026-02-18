@@ -19,6 +19,8 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
+import com.example.dpm.Repository.RatingRepository;
+import com.example.dpm.Model.Rating;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,6 +138,45 @@ public class RideDetailsFragment extends Fragment {
                 else
                     tv.setText("Driver: unknown");
 
+            });
+
+            TextView tvRatings = v.findViewById(R.id.tvRatings);
+            tvRatings.setText("Loading ratings...");
+
+            RatingRepository ratingRepo = new RatingRepository();
+            ratingRepo.getRatingsByRideId(ride.getId(), ratings -> {
+
+                if (ratings == null || ratings.isEmpty()) {
+                    tvRatings.setText("No ratings");
+                    return;
+                }
+
+                double driverSum = 0;
+                double vehicleSum = 0;
+
+                int driverCount = 0;
+                int vehicleCount = 0;
+
+                for (Rating r : ratings) {
+                    if (r.getDriverRating() > 0) {
+                        driverSum += r.getDriverRating();
+                        driverCount++;
+                    }
+                    if (r.getVehicleRating() > 0) {
+                        vehicleSum += r.getVehicleRating();
+                        vehicleCount++;
+                    }
+
+                }
+
+                String driverAvg = (driverCount == 0) ? "-" : String.format("%.1f", (driverSum / driverCount));
+                String vehicleAvg = (vehicleCount == 0) ? "-" : String.format("%.1f", (vehicleSum / vehicleCount));
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Driver rating: ").append(driverAvg).append("\n");
+                sb.append("Vehicle rating: ").append(vehicleAvg).append("\n");
+
+                tvRatings.setText(sb.toString());
             });
 
         });
