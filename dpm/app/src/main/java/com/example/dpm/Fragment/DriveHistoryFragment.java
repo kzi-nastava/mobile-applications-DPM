@@ -40,6 +40,8 @@ public class DriveHistoryFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerRides);
         btnPickDate = view.findViewById(R.id.btnPickDate);
         btnReset = view.findViewById(R.id.btnReset);
+        btnSort = view.findViewById(R.id.btnSort);
+        btnSort.setVisibility(View.GONE);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 

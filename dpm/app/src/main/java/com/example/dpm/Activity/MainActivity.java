@@ -17,10 +17,12 @@ import com.example.dpm.Fragment.AdminChangeDataRequestsFragment;
 import com.example.dpm.Fragment.AdminChatListFragment;
 import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
+import com.example.dpm.Fragment.DriverRidesFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.NotificationsFragment;
 import com.example.dpm.Fragment.PricingFragment;
 import com.example.dpm.Fragment.ProfileFragment;
+import com.example.dpm.Fragment.RatingDialogFragment;
 import com.example.dpm.Fragment.RideReportFragment;
 import com.example.dpm.Fragment.RideStateViewFragment;
 import com.example.dpm.Fragment.RideTrackingFragment;
@@ -28,11 +30,15 @@ import com.example.dpm.Fragment.SupportChatFragment;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
 import com.example.dpm.Repository.NotificationRepository;
+import com.example.dpm.Repository.RatingRepository;
+import com.example.dpm.Repository.UserRepository;
 import com.example.dpm.Session.UserSession;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.example.dpm.Fragment.PassengerHistoryFragment;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
 public class MainActivity extends AppCompatActivity {
@@ -113,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     selectedFragment = new NotificationsFragment();
 
+//                    RatingDialogFragment dialog = RatingDialogFragment.newInstance("TEST_RIDE_ID_123");
+//                    dialog.show(getSupportFragmentManager(), "rating_dialog");
                 }
             }
 
@@ -132,7 +140,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RegisterActivity.class));
             }
             if (item.getItemId() == R.id.nav_history) {
-                getSupportFragmentManager().beginTransaction().replace( R.id.frameLayout, new DriveHistoryFragment()).commit();
+                if (session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER) {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriveHistoryFragment()).commit();
+                } else {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PassengerHistoryFragment()).commit();
+                }
             }
             if (item.getItemId() == R.id.nav_pricing) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PricingFragment()).commit();
@@ -145,6 +157,9 @@ public class MainActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.nav_support_inbox) {
                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminChatListFragment()).commit();
+            }
+            if (item.getItemId() == R.id.nav_my_rides) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriverRidesFragment()).commit();
             }
 
             if (item.getItemId() == R.id.nav_logout) {
@@ -176,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new HomePageFragment()).commit();
         }
+        checkPendingRatingIfPassenger();
 
         handleDeepLink(getIntent());
         updateDrawerMenu();
@@ -198,14 +214,18 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_view_rides).setVisible(false);
         menu.findItem(R.id.nav_support_chat).setVisible(false);
         menu.findItem(R.id.nav_support_inbox).setVisible(false);
-
+        menu.findItem(R.id.nav_my_rides).setVisible(false);
         menu.findItem(R.id.nav_register_new_driver).setVisible(false);
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
 
-        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
+        if (loggedIn && session.getUser() != null &&
+                (session.getUser().getRole() == UserRole.DRIVER || session.getUser().getRole() == UserRole.PASSENGER)) {
             menu.findItem(R.id.nav_history).setVisible(true);
         } else {
             menu.findItem(R.id.nav_history).setVisible(false);
+        }
+        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
+            menu.findItem(R.id.nav_my_rides).setVisible(true);
         }
         if (loggedIn && session.getUser() != null) {
             if (session.getUser().getRole() == UserRole.ADMIN) {
@@ -254,6 +274,51 @@ public class MainActivity extends AppCompatActivity {
             unreadListener.remove();
             unreadListener = null;
         }
+    }
+
+    private void checkPendingRatingIfPassenger() {
+
+        if (pendingChecked) return;
+        pendingChecked = true;
+
+        UserSession session = UserSession.getInstance();
+        if (!session.isLoggedIn() || session.getUser() == null) return;
+
+        if (session.getUser().getRole() != UserRole.PASSENGER) return;
+
+        String uid = session.getUser().getId();
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) return;
+
+                    String rideId = doc.getString("pendingRatingRideId");
+                    Long until = doc.getLong("pendingRatingUntil");
+
+                    if (rideId == null || rideId.isEmpty() || until == null) return;
+
+                    long now = System.currentTimeMillis();
+                    if (now > until) return;
+
+
+                    RatingRepository ratingRepo = new RatingRepository();
+                    ratingRepo.getRatingsByRideId(rideId, ratings -> {
+
+                        boolean alreadyRated = ratings != null && !ratings.isEmpty();
+                        if (alreadyRated) {
+
+                            new UserRepository().clearPendingRating(uid);
+                            return;
+                        }
+
+                        RatingDialogFragment dialog = RatingDialogFragment.newInstance(rideId);
+                        dialog.show(getSupportFragmentManager(), "rating_dialog");
+                    });
+
+                });
     }
 
 }
