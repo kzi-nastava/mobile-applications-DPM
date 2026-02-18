@@ -229,7 +229,9 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
 
         if (loggedIn && session.getUser() != null &&
-                (session.getUser().getRole() == UserRole.DRIVER || session.getUser().getRole() == UserRole.PASSENGER)) {
+                (session.getUser().getRole() == UserRole.DRIVER
+                        || session.getUser().getRole() == UserRole.ADMIN
+                        || session.getUser().getRole() == UserRole.PASSENGER)) {
             menu.findItem(R.id.nav_history).setVisible(true);
         } else {
             menu.findItem(R.id.nav_history).setVisible(false);
