@@ -16,6 +16,7 @@ import com.example.dpm.Fragment.AdminChangeDataRequestsFragment;
 import com.example.dpm.Fragment.AdminChatListFragment;
 import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
+import com.example.dpm.Fragment.DriverRidesFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.PricingFragment;
 import com.example.dpm.Fragment.ProfileFragment;
@@ -129,6 +130,9 @@ public class MainActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.nav_support_inbox) {
                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminChatListFragment()).commit();
             }
+            if (item.getItemId() == R.id.nav_my_rides) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriverRidesFragment()).commit();
+            }
 
             if (item.getItemId() == R.id.nav_logout) {
 
@@ -180,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_view_rides).setVisible(false);
         menu.findItem(R.id.nav_support_chat).setVisible(false);
         menu.findItem(R.id.nav_support_inbox).setVisible(false);
-
+        menu.findItem(R.id.nav_my_rides).setVisible(false);
         menu.findItem(R.id.nav_register_new_driver).setVisible(false);
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
 
@@ -190,7 +194,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             menu.findItem(R.id.nav_history).setVisible(false);
         }
-
+        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
+            menu.findItem(R.id.nav_my_rides).setVisible(true);
+        }
         if (loggedIn && session.getUser() != null) {
             if (session.getUser().getRole() == UserRole.ADMIN) {
                 menu.findItem(R.id.nav_blocking_users).setVisible(true);
