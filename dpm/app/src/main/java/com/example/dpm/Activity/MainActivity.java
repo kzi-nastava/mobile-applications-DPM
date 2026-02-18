@@ -16,6 +16,7 @@ import com.example.dpm.Fragment.AdminChangeDataRequestsFragment;
 import com.example.dpm.Fragment.AdminChatListFragment;
 import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
+import com.example.dpm.Fragment.DriverRidesFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.PricingFragment;
 import com.example.dpm.Fragment.ProfileFragment;
@@ -30,6 +31,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.example.dpm.Fragment.PassengerHistoryFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -111,8 +113,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RegisterActivity.class));
             }
             if (item.getItemId() == R.id.nav_history) {
-                getSupportFragmentManager().beginTransaction().replace( R.id.frameLayout, new DriveHistoryFragment()).commit();
+                if (session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER) {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriveHistoryFragment()).commit();
+                } else {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PassengerHistoryFragment()).commit();
+                }
             }
+
             if (item.getItemId() == R.id.nav_pricing) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PricingFragment()).commit();
             }
@@ -124,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.nav_support_inbox) {
                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminChatListFragment()).commit();
+            }
+            if (item.getItemId() == R.id.nav_my_rides) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriverRidesFragment()).commit();
             }
 
             if (item.getItemId() == R.id.nav_logout) {
@@ -176,14 +186,18 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_view_rides).setVisible(false);
         menu.findItem(R.id.nav_support_chat).setVisible(false);
         menu.findItem(R.id.nav_support_inbox).setVisible(false);
-
+        menu.findItem(R.id.nav_my_rides).setVisible(false);
         menu.findItem(R.id.nav_register_new_driver).setVisible(false);
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
 
-        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
+        if (loggedIn && session.getUser() != null &&
+                (session.getUser().getRole() == UserRole.DRIVER || session.getUser().getRole() == UserRole.PASSENGER)) {
             menu.findItem(R.id.nav_history).setVisible(true);
         } else {
             menu.findItem(R.id.nav_history).setVisible(false);
+        }
+        if (loggedIn && session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER){
+            menu.findItem(R.id.nav_my_rides).setVisible(true);
         }
         if (loggedIn && session.getUser() != null) {
             if (session.getUser().getRole() == UserRole.ADMIN) {
