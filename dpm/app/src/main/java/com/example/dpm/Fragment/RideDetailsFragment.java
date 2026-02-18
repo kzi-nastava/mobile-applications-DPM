@@ -3,6 +3,7 @@ import android.os.Bundle;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.*;
 import androidx.fragment.app.Fragment;
@@ -26,11 +27,17 @@ import com.example.dpm.Repository.RatingRepository;
 import com.example.dpm.Model.Rating;
 import com.example.dpm.Session.UserSession;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class RideDetailsFragment extends Fragment {
 
+    Button btnRate;
     private static final String KEY="rideId";
 
     public static RideDetailsFragment newInstance(String id){
@@ -39,6 +46,20 @@ public class RideDetailsFragment extends Fragment {
         b.putString(KEY,id);
         f.setArguments(b);
         return f;
+    }
+
+    private long parseEndTimeToMillis(String endTime) {
+        if (endTime == null || endTime.trim().isEmpty()) return -1;
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+            sdf.setLenient(false);
+            sdf.setTimeZone(TimeZone.getTimeZone("Europe/Belgrade"));
+            Date d = sdf.parse(endTime.trim());
+            return (d != null) ? d.getTime() : -1;
+        } catch (ParseException e) {
+            return -1;
+        }
     }
 
     @Nullable
@@ -55,6 +76,28 @@ public class RideDetailsFragment extends Fragment {
 
             if(ride == null || ride.getLocations()==null || ride.getLocations().isEmpty())
                 return;
+
+
+            btnRate = v.findViewById(R.id.btnRate);
+            btnRate.setOnClickListener(x -> {
+                long threeDaysInMillis = 3L * 24 * 60 * 60 * 1000;
+                long now = System.currentTimeMillis();
+                long rideEndTimeMillis = parseEndTimeToMillis(ride.getEndTime());
+
+                if (rideEndTimeMillis <= 0) {
+                    Toast.makeText(getContext(), "Invalid end time format.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (now - rideEndTimeMillis > threeDaysInMillis) {
+                    Toast.makeText(getContext(), "Rating period expired.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                RatingDialogFragment dialog = RatingDialogFragment.newInstance(ride.getId());
+                dialog.show(getParentFragmentManager(), "rating_dialog");
+            });
+
 
             // NAĐI START I END po orderIndex
             RideLocation first = ride.getLocations().get(0);
@@ -193,6 +236,16 @@ public class RideDetailsFragment extends Fragment {
 
             RatingRepository ratingRepo = new RatingRepository();
             ratingRepo.getRatingsByRideId(ride.getId(), ratings -> {
+
+                boolean alreadyRated = ratings != null && !ratings.isEmpty();
+
+                if (alreadyRated) {
+                    btnRate.setEnabled(false);
+                    btnRate.setText("Rated");
+                } else {
+                    btnRate.setEnabled(true);
+                    btnRate.setText("Rate");
+                }
 
                 if (ratings == null || ratings.isEmpty()) {
                     tvRatings.setText("No ratings");

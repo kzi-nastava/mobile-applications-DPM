@@ -40,14 +40,10 @@ public class PassengerHistoryFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private Button btnPickDate, btnReset, btnSort;
-
     private final List<Ride> allRides = new ArrayList<>();
     private final List<Ride> filteredRides = new ArrayList<>();
-
     private PassengerRideAdapter adapter;
     private final UserSession session = UserSession.getInstance();
-
-    // shake sort
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private SensorEventListener shakeListener;
