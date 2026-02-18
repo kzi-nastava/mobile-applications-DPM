@@ -18,9 +18,6 @@ import com.example.dpm.Repository.RatingRepository;
 public class RatingDialogFragment extends DialogFragment {
 
     private static final String ARG_RIDE_ID = "rideId";
-
-    //PORMENITI DINAMICKI ID VOZNJE KAD SE URADI ISTORIJA I ZAVRSETAK VOZNJE
-    private static final String FALLBACK_RIDE_ID = "TEST_RIDE_ID_123";
     private RatingBar rbDriver, rbVehicle;
     private EditText etComment;
     private Button btnCancel, btnSubmit;
@@ -72,12 +69,14 @@ public class RatingDialogFragment extends DialogFragment {
             return;
         }
 
-        String rideId = FALLBACK_RIDE_ID;
+        String rideId = null;
+
         if (getArguments() != null) {
-            String argRideId = getArguments().getString(ARG_RIDE_ID);
-            if (!TextUtils.isEmpty(argRideId)) {
-                rideId = argRideId;
-            }
+            rideId = getArguments().getString(ARG_RIDE_ID);
+        }
+        if (TextUtils.isEmpty(rideId)) {
+            Toast.makeText(getContext(), "Invalid ride ID.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         Rating rating = new Rating();

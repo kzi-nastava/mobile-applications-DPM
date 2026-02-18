@@ -147,12 +147,50 @@ public class RideRepository {
                         return;
                     }
 
+                    String endTime = nowString(); // vec imas
+                    long threeDays = 3L * 24 * 60 * 60 * 1000;
+                    long untilMillis = System.currentTimeMillis() + threeDays;
+
+
                     db.collection("ride").document(rideId)
                             .update(
                                     "status", RideStatus.FINISHED,
-                                    "endTime", nowString()
+                                    "endTime", endTime
                             )
-                            .addOnSuccessListener(onSuccess)
+                            .addOnSuccessListener(unused -> {
+
+
+                                com.google.firebase.firestore.WriteBatch batch = db.batch();
+
+
+                                if (ride.getPassengerId() != null && !ride.getPassengerId().isEmpty()) {
+                                    batch.update(
+                                            db.collection("users").document(ride.getPassengerId()),
+                                            "pendingRatingRideId", rideId,
+                                            "pendingRatingUntil", untilMillis
+                                    );
+                                }
+
+                                if (ride.getLinkedPassengerIds() != null) {
+                                    for (String uid : ride.getLinkedPassengerIds()) {
+                                        if (uid == null || uid.isEmpty()) continue;
+                                        batch.update(
+                                                db.collection("users").document(uid),
+                                                "pendingRatingRideId", rideId,
+                                                "pendingRatingUntil", untilMillis
+                                        );
+                                    }
+                                }
+
+                                batch.commit()
+                                        .addOnSuccessListener(x -> {
+                                            if (onSuccess != null) onSuccess.onSuccess(null);
+                                        })
+                                        .addOnFailureListener(err -> {
+                                            if (onFailure != null) onFailure.onFailure(err);
+                                        });
+
+                            })
                             .addOnFailureListener(onFailure);
 
                 })

@@ -26,19 +26,22 @@ import com.example.dpm.Fragment.RideStateViewFragment;
 import com.example.dpm.Fragment.SupportChatFragment;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
+import com.example.dpm.Repository.RatingRepository;
+import com.example.dpm.Repository.UserRepository;
 import com.example.dpm.Session.UserSession;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.example.dpm.Fragment.PassengerHistoryFragment;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
     DrawerLayout drawerLayout;
     MaterialToolbar toolbar;
     NavigationView navigationView;
-
+    private boolean pendingChecked = false;
     UserSession session;
 
     @Override
@@ -165,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new HomePageFragment()).commit();
         }
+        checkPendingRatingIfPassenger();
 
         updateDrawerMenu();
 
@@ -217,6 +221,51 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateDrawerMenu();
+    }
+
+    private void checkPendingRatingIfPassenger() {
+
+        if (pendingChecked) return;
+        pendingChecked = true;
+
+        UserSession session = UserSession.getInstance();
+        if (!session.isLoggedIn() || session.getUser() == null) return;
+
+        if (session.getUser().getRole() != UserRole.PASSENGER) return;
+
+        String uid = session.getUser().getId();
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) return;
+
+                    String rideId = doc.getString("pendingRatingRideId");
+                    Long until = doc.getLong("pendingRatingUntil");
+
+                    if (rideId == null || rideId.isEmpty() || until == null) return;
+
+                    long now = System.currentTimeMillis();
+                    if (now > until) return;
+
+
+                    RatingRepository ratingRepo = new RatingRepository();
+                    ratingRepo.getRatingsByRideId(rideId, ratings -> {
+
+                        boolean alreadyRated = ratings != null && !ratings.isEmpty();
+                        if (alreadyRated) {
+
+                            new UserRepository().clearPendingRating(uid);
+                            return;
+                        }
+
+                        RatingDialogFragment dialog = RatingDialogFragment.newInstance(rideId);
+                        dialog.show(getSupportFragmentManager(), "rating_dialog");
+                    });
+
+                });
     }
 
 }
