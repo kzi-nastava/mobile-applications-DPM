@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     NavigationView navigationView;
     ListenerRegistration unreadListener;
     NotificationRepository notificationRepository;
+    private boolean pendingChecked = false;
     UserSession session;
 
     @Override

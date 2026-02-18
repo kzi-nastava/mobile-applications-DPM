@@ -25,7 +25,7 @@ import java.util.Locale;
 
 public class DriveHistoryFragment extends Fragment {
     RecyclerView recyclerView;
-    Button btnPickDate, btnReset;
+    Button btnPickDate, btnReset, btnSort;
     List<Ride> allDrives = new ArrayList<>();
     List<Ride> filteredDrives = new ArrayList<>();
     RideAdapter adapter;
