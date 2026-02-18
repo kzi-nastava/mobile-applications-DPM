@@ -11,8 +11,10 @@ import androidx.fragment.app.Fragment;
 import com.example.dpm.Model.Driver;
 import com.example.dpm.Model.Ride;
 import com.example.dpm.Model.RideLocation;
+import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
 import com.example.dpm.Repository.DriverRepository;
+import com.example.dpm.Repository.PassengerRepository;
 import com.example.dpm.Repository.RideRepository;
 
 import org.osmdroid.config.Configuration;
@@ -23,6 +25,7 @@ import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import com.example.dpm.Repository.RatingRepository;
 import com.example.dpm.Model.Rating;
+import com.example.dpm.Session.UserSession;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -183,6 +186,50 @@ public class RideDetailsFragment extends Fragment {
                     tv.setText("Driver: unknown");
 
             });
+
+            UserSession session = UserSession.getInstance();
+            UserRole role = session.getUser().getRole();
+
+            TextView tvPassengers = v.findViewById(R.id.tvPassengers);
+
+            Button btnOrderAgain = v.findViewById(R.id.btnOrderAgain);
+            Button btnRate = v.findViewById(R.id.btnRate);
+            if(role == UserRole.ADMIN){
+                btnOrderAgain.setVisibility(View.GONE);
+                btnRate.setVisibility(View.GONE);
+                PassengerRepository passengerRepo = new PassengerRepository();
+
+                List<String> ids = new ArrayList<>();
+
+                if(ride.getPassengerId()!=null)
+                    ids.add(ride.getPassengerId());
+
+                if(ride.getLinkedPassengerIds()!=null)
+                    ids.addAll(ride.getLinkedPassengerIds());
+
+                if(ids.isEmpty()){
+                    tvPassengers.setText("Passengers: none");
+                } else {
+
+                    StringBuilder names = new StringBuilder("Passengers:\n");
+
+                    for(String id : ids){
+                        passengerRepo.getPassengerById(id, p -> {
+                            if(p!=null){
+                                names.append(p.getFirstName())
+                                        .append(" ")
+                                        .append(p.getLastName())
+                                        .append("\n");
+
+                                tvPassengers.setText(names.toString());
+                            }
+                        });
+                    }
+                }
+
+            }else{
+                tvPassengers.setVisibility(View.GONE);
+            }
 
             TextView tvRatings = v.findViewById(R.id.tvRatings);
             tvRatings.setText("Loading ratings...");
