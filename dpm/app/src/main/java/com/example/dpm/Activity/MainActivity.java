@@ -3,6 +3,7 @@ package com.example.dpm.Activity;
 import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.widget.Toast;
@@ -19,14 +20,17 @@ import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.DriverRidesFragment;
 import com.example.dpm.Fragment.HomePageFragment;
+import com.example.dpm.Fragment.NotificationsFragment;
 import com.example.dpm.Fragment.PricingFragment;
 import com.example.dpm.Fragment.ProfileFragment;
 import com.example.dpm.Fragment.RatingDialogFragment;
 import com.example.dpm.Fragment.RideReportFragment;
 import com.example.dpm.Fragment.RideStateViewFragment;
+import com.example.dpm.Fragment.RideTrackingFragment;
 import com.example.dpm.Fragment.SupportChatFragment;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
+import com.example.dpm.Repository.NotificationRepository;
 import com.example.dpm.Repository.RatingRepository;
 import com.example.dpm.Repository.UserRepository;
 import com.example.dpm.Session.UserSession;
@@ -36,12 +40,15 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.example.dpm.Fragment.PassengerHistoryFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 public class MainActivity extends AppCompatActivity {
 
     DrawerLayout drawerLayout;
     MaterialToolbar toolbar;
     NavigationView navigationView;
+    ListenerRegistration unreadListener;
+    NotificationRepository notificationRepository;
     private boolean pendingChecked = false;
     UserSession session;
 
@@ -69,6 +76,30 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
+        if (loggedIn && session.getUser() != null) {
+            NotificationRepository notificationRepository = new NotificationRepository();
+
+            unreadListener = notificationRepository.listenUnreadCount(
+                    session.getUser().getId(),
+                    (snapshots, e) -> {
+                        if (e != null || snapshots == null) return;
+
+                        int count = snapshots.size();
+
+                        com.google.android.material.badge.BadgeDrawable badge =
+                                bottomNavigationView.getOrCreateBadge(R.id.bottom_bar_notification);
+
+                        if (count > 0) {
+                            badge.setVisible(true);
+                            badge.setNumber(count);
+                        } else {
+                            badge.clearNumber();
+                            badge.setVisible(false);
+                        }
+                    }
+            );
+        }
+
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
 
@@ -78,24 +109,18 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new HomePageFragment();
             } else if (id == R.id.bottom_bar_profile) {
                 if(!loggedIn) {
-                    Toast.makeText(
-                            this,
-                            "You need to login first!",
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    Toast.makeText(this, "You need to login first!", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     selectedFragment = new ProfileFragment();
                 }
             } else if (id == R.id.bottom_bar_notification) {
                 if(!loggedIn) {
-                    Toast.makeText(
-                            this,
-                            "You need to login first!",
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    Toast.makeText(this, "You need to login first!", Toast.LENGTH_SHORT).show();
                 }
                 else {
+                    selectedFragment = new NotificationsFragment();
+
 //                    RatingDialogFragment dialog = RatingDialogFragment.newInstance("TEST_RIDE_ID_123");
 //                    dialog.show(getSupportFragmentManager(), "rating_dialog");
                 }
@@ -178,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
         }
         checkPendingRatingIfPassenger();
 
+        handleDeepLink(getIntent());
         updateDrawerMenu();
 
     }
@@ -227,10 +253,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void handleDeepLink(Intent intent) {
+        Uri data = intent.getData();
+        if (data == null) return;
+
+        if ("ride".equals(data.getHost())) {
+            String rideId = data.getQueryParameter("rideId");
+            if (rideId != null && !rideId.isEmpty()) {
+                RideTrackingFragment frag = RideTrackingFragment.newInstance(rideId);
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, frag).addToBackStack(null).commit();
+            }
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleDeepLink(intent);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         updateDrawerMenu();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (unreadListener != null) {
+            unreadListener.remove();
+            unreadListener = null;
+        }
     }
 
     private void checkPendingRatingIfPassenger() {

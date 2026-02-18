@@ -14,4 +14,6 @@ public class Notification {
     private String message;
     private boolean read;
     private long createdAt;
+    private String type;
+    private String rideId;
 }
