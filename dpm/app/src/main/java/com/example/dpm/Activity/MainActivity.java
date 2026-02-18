@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.dpm.Fragment.AdminChangeDataRequestsFragment;
 import com.example.dpm.Fragment.AdminChatListFragment;
+import com.example.dpm.Fragment.AdminHistoryFragment;
 import com.example.dpm.Fragment.AdminUsersFragment;
 import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.DriverRidesFragment;
@@ -116,13 +117,20 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RegisterActivity.class));
             }
             if (item.getItemId() == R.id.nav_history) {
-                if (session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER) {
-                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriveHistoryFragment()).commit();
+                if (session.getUser() != null && session.getUser().getRole() == UserRole.ADMIN) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.frameLayout, new AdminHistoryFragment())
+                            .commit();
+                } else if (session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.frameLayout, new DriveHistoryFragment())
+                            .commit();
                 } else {
-                    getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PassengerHistoryFragment()).commit();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.frameLayout, new PassengerHistoryFragment())
+                            .commit();
                 }
             }
-
             if (item.getItemId() == R.id.nav_pricing) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new PricingFragment()).commit();
             }
@@ -195,7 +203,9 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.nav_logout).setVisible(loggedIn);
 
         if (loggedIn && session.getUser() != null &&
-                (session.getUser().getRole() == UserRole.DRIVER || session.getUser().getRole() == UserRole.PASSENGER)) {
+                (session.getUser().getRole() == UserRole.DRIVER
+                        || session.getUser().getRole() == UserRole.ADMIN
+                        || session.getUser().getRole() == UserRole.PASSENGER)) {
             menu.findItem(R.id.nav_history).setVisible(true);
         } else {
             menu.findItem(R.id.nav_history).setVisible(false);

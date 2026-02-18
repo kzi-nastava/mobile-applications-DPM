@@ -90,6 +90,31 @@ public class RideRepository {
                 });
     }
 
+    public void getPastRidesForAdmin(OnSuccessListener<List<Ride>> listener) {
+
+        var qFinished = db.collection("ride")
+                .whereEqualTo("status", "FINISHED")
+                .get();
+
+        var qCancelled = db.collection("ride")
+                .whereEqualTo("status", "CANCELLED")
+                .get();
+
+        Tasks.whenAllSuccess(qFinished, qCancelled)
+                .addOnSuccessListener(results -> {
+
+                    Map<String, Ride> unique = new HashMap<>();
+
+                    QuerySnapshot s1 = (QuerySnapshot) results.get(0);
+                    QuerySnapshot s2 = (QuerySnapshot) results.get(1);
+
+                    for (Ride r : s1.toObjects(Ride.class)) unique.put(r.getId(), r);
+                    for (Ride r : s2.toObjects(Ride.class)) unique.put(r.getId(), r);
+
+                    listener.onSuccess(new ArrayList<>(unique.values()));
+                })
+                .addOnFailureListener(e -> listener.onSuccess(new ArrayList<>()));
+    }
     public void startRide(String rideId, String scheduledAt, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
         db.collection("ride").document(rideId).get()
