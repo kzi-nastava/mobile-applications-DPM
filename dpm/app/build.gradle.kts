@@ -55,4 +55,6 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
+    implementation("com.sun.mail:android-mail:1.6.7")
+    implementation("com.sun.mail:android-activation:1.6.7")
 }
