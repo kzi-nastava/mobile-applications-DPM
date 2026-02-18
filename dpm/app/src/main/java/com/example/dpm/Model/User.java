@@ -31,4 +31,6 @@ public class User {
     protected String profileImageUrl;
 
     protected UserRole role;
+    private String pendingRatingRideId;
+    private long pendingRatingUntil;
 }

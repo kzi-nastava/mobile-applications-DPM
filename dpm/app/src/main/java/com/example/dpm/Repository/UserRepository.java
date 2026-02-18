@@ -9,6 +9,7 @@ import com.example.dpm.Model.User;
 import com.example.dpm.Model.UserRole;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -134,6 +135,22 @@ public class UserRepository {
                                 .addOnFailureListener(onFailure)
                 )
                 .addOnFailureListener(onFailure);
+    }
+
+    public Task<Void> setPendingRating(String userId, String rideId, long untilMillis) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("pendingRatingRideId", rideId);
+        updates.put("pendingRatingUntil", untilMillis);
+
+        return db.collection("users").document(userId).update(updates);
+    }
+
+    public Task<Void> clearPendingRating(String userId) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("pendingRatingRideId", null);
+        updates.put("pendingRatingUntil", 0L);
+
+        return db.collection("users").document(userId).update(updates);
     }
 
 
