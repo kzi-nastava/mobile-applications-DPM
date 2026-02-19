@@ -1,6 +1,7 @@
 package com.example.dpm.Repository;
 
 import com.example.dpm.Model.Notification;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -20,16 +21,21 @@ public class NotificationRepository {
         notification.setMessage(message);
         notification.setRead(false);
 
-        // FORMAT DATUMA
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
-        String formattedDate = sdf.format(new Date());
+//        // FORMAT DATUMA
+//        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+//        String formattedDate = sdf.format(new Date());
 
-        notification.setCreatedAt(formattedDate);
-
+        notification.setCreatedAt(System.currentTimeMillis());
+        notification.setRideId(null);
         db.collection("notifications")
                 .document(notification.getId())
                 .set(notification);
     }
 
+    public Task<Void> createNotification(Notification n) {
+        String id = db.collection("notifications").document().getId();
+        n.setId(id);
+        return db.collection("notifications").document(id).set(n);
+    }
 }
 
