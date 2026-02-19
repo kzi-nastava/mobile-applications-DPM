@@ -18,4 +18,35 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"/>
 
+    <!-- Stations container -->
+    <LinearLayout
+        android:id="@+id/layoutStationsSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingTop="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Intermediate stations"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <LinearLayout
+            android:id="@+id/stationsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="8dp"/>
+
+        <Button
+            android:id="@+id/btnAddStation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add station"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
 </LinearLayout>

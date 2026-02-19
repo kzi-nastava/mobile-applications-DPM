@@ -38,10 +38,19 @@ public class RideRepository {
     NotificationRepository notificationRepository = new NotificationRepository();
     private PassengerRepository passengerRepository = new PassengerRepository();
     private UserRepository userRepository = new UserRepository();
+    public void addRide(Ride ride,
+                        OnSuccessListener<Void> onSuccess,
+                        OnFailureListener onFailure) {
+
+        db.collection("ride")
+                .document() // generise ID
+                .set(ride)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
     public void addRide(Ride ride) {
         db.collection("ride").document(ride.getId()).set(ride);
     }
-
     public void getAllRides(OnSuccessListener<List<Ride>> listener) {
         db.collection("ride").get().addOnSuccessListener(snapshot ->
                 listener.onSuccess(snapshot.toObjects(Ride.class))
@@ -452,6 +461,29 @@ public class RideRepository {
                 .addOnFailureListener(onError);
     }
 
+
+
+    public void hasScheduledRideInNext5Hours(String driverId,
+                                             OnSuccessListener<Boolean> listener) {
+
+        long now = System.currentTimeMillis();
+        long fiveHoursLater = now + (5 * 60 * 60 * 1000);
+
+        db.collection("ride")
+                .whereEqualTo("driverId", driverId)
+                .whereEqualTo("status", RideStatus.ACCEPTED.name())
+                .whereGreaterThanOrEqualTo("startTime", now)
+                .whereLessThanOrEqualTo("startTime", fiveHoursLater)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    if (snapshot.isEmpty()) {
+                        listener.onSuccess(false);
+                    } else {
+                        listener.onSuccess(true);
+                    }
+                });
+    }
 
 
 }
