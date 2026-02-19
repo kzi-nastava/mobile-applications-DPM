@@ -104,4 +104,37 @@ public class RideEstimateRepository {
             }
         });
     }
+
+    public void routeByPoints(Context ctx, GeoPoint from, GeoPoint to, Callback cb) {
+
+        executor.execute(() -> {
+            try {
+
+                ArrayList<GeoPoint> waypoints = new ArrayList<>();
+                waypoints.add(from);
+                waypoints.add(to);
+
+                OSRMRoadManager rm = new OSRMRoadManager(ctx, "UBERIO");
+                Road road = rm.getRoad(waypoints);
+
+                if (road == null || road.mRouteHigh == null || road.mRouteHigh.isEmpty()) {
+                    throw new Exception("Ruta nije pronađena");
+                }
+
+                double km = road.mLength;
+                double min = road.mDuration / 60.0;
+
+                RideEstimate result =
+                        new RideEstimate(from, to, km, min, road.mRouteHigh);
+
+                new android.os.Handler(ctx.getMainLooper())
+                        .post(() -> cb.onSuccess(result));
+
+            } catch (Exception e) {
+                new android.os.Handler(ctx.getMainLooper())
+                        .post(() -> cb.onError(e));
+            }
+        });
+    }
+
 }

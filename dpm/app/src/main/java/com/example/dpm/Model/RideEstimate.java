@@ -22,6 +22,16 @@ public class RideEstimate {
         this.routePoints = routePoints;
         this.waypoints = waypoints;
     }
+    public RideEstimate(GeoPoint fromPoint, GeoPoint toPoint,
+                        double distanceKm, double durationMin,
+                        List<GeoPoint> routePoints) {
+        this.fromPoint = fromPoint;
+        this.toPoint = toPoint;
+        this.distanceKm = distanceKm;
+        this.durationMin = durationMin;
+        this.routePoints = routePoints;
+    }
+
 
     public GeoPoint getFromPoint(){ return fromPoint; }
     public GeoPoint getToPoint(){ return toPoint; }
