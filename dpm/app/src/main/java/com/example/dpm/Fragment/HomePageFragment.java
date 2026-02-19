@@ -1,5 +1,7 @@
 package com.example.dpm.Fragment;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +51,7 @@ import org.osmdroid.views.overlay.Polyline;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -215,6 +218,10 @@ public class HomePageFragment extends Fragment {
 
         btnRideNow.setOnClickListener(v -> {
             assignDriverNow();
+        });
+
+        btnRideLater.setOnClickListener(v -> {
+            showScheduleDialog();
         });
 
         btnAddPassenger.setOnClickListener(v -> {
@@ -412,6 +419,115 @@ public class HomePageFragment extends Fragment {
         });
 
     }
+
+    private void showScheduleDialog() {
+
+        DatePickerDialog datePicker = new DatePickerDialog(
+                requireContext(),
+                (view, year, month, dayOfMonth) -> {
+
+                    TimePickerDialog timePicker = new TimePickerDialog(
+                            requireContext(),
+                            (timeView, hour, minute) -> {
+
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.set(year, month, dayOfMonth, hour, minute);
+
+                                long now = System.currentTimeMillis();
+                                long maxAllowed = now + (5 * 60 * 60 * 1000); // 5 sati u ms
+
+                                long selected = calendar.getTimeInMillis();
+
+                                if (selected <= now) {
+                                    Toast.makeText(getContext(),
+                                            "Select future time",
+                                            Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+                                if (selected > maxAllowed) {
+                                    Toast.makeText(getContext(),
+                                            "Ride can be scheduled only within next 5 hours",
+                                            Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+
+                                createScheduledRide(calendar);
+
+                            },
+                            Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+                            Calendar.getInstance().get(Calendar.MINUTE),
+                            true
+                    );
+
+                    timePicker.show();
+                },
+                Calendar.getInstance().get(Calendar.YEAR),
+                Calendar.getInstance().get(Calendar.MONTH),
+                Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+        );
+
+        datePicker.show();
+    }
+
+    private void createScheduledRide(Calendar calendar) {
+
+        Ride ride = new Ride();
+
+        ride.setPassengerId(loggedInUser.getId());
+        ride.setDistance(currentDistanceKm);
+        ride.setPrice(price);
+        ride.setPricingSnapshot(ridePricingSnapshot);
+
+        ride.setDriverId(null);
+        ride.setVehicleId(null);
+
+        ride.setStatus(RideStatus.SCHEDULED);
+        ride.setPanicTriggered(false);
+
+        SimpleDateFormat sdf =
+                new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+
+        ride.setScheduledAt(sdf.format(calendar.getTime()));
+
+        // Lokacije
+        List<RideLocation> locations = new ArrayList<>();
+
+        for (int i = 0; i < points.size(); i++) {
+
+            if (i == 0) {
+                locations.add(new RideLocation(
+                        startAddress,
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+            else if (i == points.size() - 1) {
+                locations.add(new RideLocation(
+                        endAddress,
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+            else if (stationsAddress != null && stationsAddress.size() >= i) {
+                locations.add(new RideLocation(
+                        stationsAddress.get(i - 1),
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+        }
+
+        ride.setLocations(locations);
+        ride.setLinkedPassengerIds(new ArrayList<>());
+
+        saveRide(ride);
+    }
+
 
     private void loadVehicles() {
         try {
