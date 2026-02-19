@@ -149,7 +149,7 @@ public class RideStateViewFragment extends Fragment {
         sb.append("Linked passengers: ").append(formatUsersList(linkedPassengers)).append("\n");
         sb.append("Vehicle model: ").append(formatVehicleModel(vehicle)).append("\n");
 
-        sb.append("\nDistance: ").append(ride.getDistance() != null ? ride.getDistance() : "—").append(" km\n");
+        sb.append("\nDistance: ").append(ride.getDistance() != 0 ? ride.getDistance() : "—").append(" km\n");
         sb.append("Total price: ").append(ride.getPrice()).append("\n");
 
         if (ride.getPricingSnapshot() != null) {

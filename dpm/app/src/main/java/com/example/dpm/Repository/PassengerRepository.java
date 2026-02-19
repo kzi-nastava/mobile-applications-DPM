@@ -67,4 +67,34 @@ public class PassengerRepository {
                 });
     }
 
+    public void getPassengerByEmail(String email,
+                                    OnSuccessListener<Passenger> onSuccess,
+                                    java.util.function.Consumer<Exception> onFailure) {
+
+        db.collection("users")
+                .whereEqualTo("email", email)
+                .whereEqualTo("role", UserRole.PASSENGER.name())
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    if (snapshot.isEmpty()) {
+                        onSuccess.onSuccess(null);
+                        return;
+                    }
+
+                    Passenger passenger =
+                            snapshot.getDocuments()
+                                    .get(0)
+                                    .toObject(Passenger.class);
+
+                    onSuccess.onSuccess(passenger);
+                })
+                .addOnFailureListener(e -> {
+                    if (onFailure != null) {
+                        onFailure.accept(e);
+                    }
+                });
+    }
+
 }

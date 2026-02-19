@@ -42,7 +42,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         session = UserSession.getInstance();
-        boolean loggedIn = session.isLoggedIn();
+        boolean loggedIn;
+        if(session == null)
+            loggedIn = false;
+        else {
+            loggedIn = true;
+        }
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

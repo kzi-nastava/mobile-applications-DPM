@@ -13,5 +13,5 @@ public class Notification {
     private String  userId;
     private String message;
     private boolean read;
-    private long createdAt;
+    private String createdAt;
 }

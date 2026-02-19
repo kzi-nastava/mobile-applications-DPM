@@ -20,7 +20,7 @@ public class Ride {
     private String passengerId;
     private String vehicleId;
 
-    private Integer distance;
+    private double distance;
     private double price;
     private RidePricingSnapshot pricingSnapshot;
     private String cancelReason;
