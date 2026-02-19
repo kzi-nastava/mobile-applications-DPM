@@ -16,16 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dpm.Adapter.PassengerEmailAdapter;
 import com.example.dpm.Adapter.VehicleAdapter;
 
-import com.example.dpm.Model.Driver;
 import com.example.dpm.Model.Notification;
-import com.example.dpm.Model.Passenger;
-import com.example.dpm.Model.PriceConfig;
 import com.example.dpm.Model.Ride;
+import com.example.dpm.Model.RideEstimate;
 import com.example.dpm.Model.RideLocation;
 import com.example.dpm.Model.RidePricingSnapshot;
 import com.example.dpm.Model.RideStatus;
 import com.example.dpm.Model.User;
-import com.example.dpm.Model.UserRole;
 import com.example.dpm.Model.Vehicle;
 import com.example.dpm.Model.VehicleType;
 import com.example.dpm.R;
@@ -38,8 +35,9 @@ import com.example.dpm.Repository.RideEstimateRepository;
 import com.example.dpm.Repository.RideRepository;
 import com.example.dpm.Repository.VehicleRepository;
 import com.example.dpm.Session.UserSession;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.firebase.firestore.DocumentId;
 
 
 import org.osmdroid.config.Configuration;
@@ -57,9 +55,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -85,8 +83,8 @@ public class HomePageFragment extends Fragment {
     private final Set<Overlay> routeOverlays = new HashSet<>();
     private final Set<Marker> vehicleMarkers = new HashSet<>();
 
-    private com.google.android.material.card.MaterialCardView estimateCard;
-    private android.widget.TextView tvEstimateBody;
+    private MaterialCardView estimateCard;
+    private TextView tvEstimateBody;
     private boolean routeVisible = false;
 
     private LinearLayout passengersSection;
@@ -337,7 +335,7 @@ public class HomePageFragment extends Fragment {
                         new RideEstimateRepository.Callback(){
 
                             @Override
-                            public void onSuccess(com.example.dpm.Model.RideEstimate e){
+                            public void onSuccess(RideEstimate e){
 
                                 clearRouteOverlays();
 
@@ -471,6 +469,45 @@ public class HomePageFragment extends Fragment {
         datePicker.show();
     }
 
+    public interface OnVehicleFoundListener {
+        void onVehicleFound(Vehicle vehicle);
+        void onFailure(String message);
+    }
+
+    private void findVehicleForRide(
+            VehicleType vehicleTypeSelected,
+            int numberOfPassengers,
+            boolean petCheck,
+            boolean babyCheck,
+            GeoPoint pickupLocation,
+            OnVehicleFoundListener listener
+    ) {
+
+        vehicleRepository.getAllVehicles(vehicles -> {
+
+            List<Vehicle> selectedVehicles = vehicles.stream()
+                    .filter(v -> v.getType() == vehicleTypeSelected)
+                    .filter(v -> v.getSeats() >= numberOfPassengers + 1)
+                    .filter(v -> !petCheck || v.isPetFriendly())
+                    .filter(v -> !babyCheck || v.isBabyFriendly())
+                    .collect(Collectors.toList());
+
+            if (selectedVehicles.isEmpty()) {
+                listener.onFailure("No vehicles available");
+                return;
+            }
+
+            Vehicle nearest = findNearestDriver(selectedVehicles, pickupLocation);
+
+            if (nearest == null) {
+                listener.onFailure("No drivers nearby");
+                return;
+            }
+
+            listener.onVehicleFound(nearest);
+        });
+    }
+
     private void createScheduledRide(Calendar calendar) {
 
         Ride ride = new Ride();
@@ -480,10 +517,52 @@ public class HomePageFragment extends Fragment {
         ride.setPrice(price);
         ride.setPricingSnapshot(ridePricingSnapshot);
 
-        ride.setDriverId(null);
-        ride.setVehicleId(null);
+        vehicleRepository = new VehicleRepository();
 
-        ride.setStatus(RideStatus.SCHEDULED);
+        int numberOfPassengers = passengerEmails.size();
+
+        VehicleType vehicleTypeSelected;
+        if(spVehicleType.getSelectedItemPosition() == 1) {
+            vehicleTypeSelected = VehicleType.LUXURY;
+        }
+        else if(spVehicleType.getSelectedItemPosition() == 2) {
+            vehicleTypeSelected = VehicleType.VAN;
+        } else {
+            vehicleTypeSelected = VehicleType.STANDARD;
+        }
+        boolean babyCheck = cbBaby.isChecked();
+        boolean petCheck = cbPet.isChecked();
+
+        ride.setPassengerId(loggedInUser.getId());
+        ride.setDistance(currentDistanceKm);
+        ride.setPrice(price);
+        ride.setPricingSnapshot(ridePricingSnapshot);
+
+        findVehicleForRide(
+                vehicleTypeSelected,
+                numberOfPassengers,
+                petCheck,
+                babyCheck,
+                points.get(0),
+                new OnVehicleFoundListener() {
+
+                    @Override
+                    public void onVehicleFound(Vehicle vehicle) {
+
+                        ride.setDriverId(vehicle.getDriverId());
+                        ride.setVehicleId(vehicle.getId());
+
+                    }
+
+                    @Override
+                    public void onFailure(String message) {
+                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        ride.setStatus(RideStatus.ACCEPTED);
+
         ride.setPanicTriggered(false);
 
         SimpleDateFormat sdf =
@@ -727,7 +806,7 @@ public class HomePageFragment extends Fragment {
                 }
 
                 if(activeDriverVehicles.isEmpty()) {
-                    showNoDriverNotification("There are currently no active drivers.");
+                    //showNoDriverNotification("There are currently no active drivers.");
                     return;
                 }
 
@@ -823,7 +902,9 @@ public class HomePageFragment extends Fragment {
                 ride,
                 u -> {
                     Toast.makeText(getContext(),"Ride created!",Toast.LENGTH_SHORT).show();
+
                     NotificationRepository notificationRepository = new NotificationRepository();
+
                     Notification n = new Notification();
                     n.setUserId(loggedInUser.getId());
                     n.setMessage("Ride has created.");
@@ -831,8 +912,16 @@ public class HomePageFragment extends Fragment {
                     n.setCreatedAt(System.currentTimeMillis());
                     n.setType("RIDE_CREATED");
                     n.setRideId(ride.getId());
-
                     notificationRepository.createNotification(n);
+
+                    Notification notificationForDriver = new Notification();
+                    notificationForDriver.setUserId(ride.getDriverId());
+                    notificationForDriver.setMessage("You got a new ride!");
+                    notificationForDriver.setRead(false);
+                    notificationForDriver.setCreatedAt(System.currentTimeMillis());
+                    notificationForDriver.setType("RIDE_CREATED");
+                    notificationForDriver.setRideId(ride.getId());
+                    notificationRepository.createNotification(notificationForDriver);
                 },
                 e -> Toast.makeText(getContext(),"Error: "+e.getMessage(),Toast.LENGTH_LONG).show()
         );

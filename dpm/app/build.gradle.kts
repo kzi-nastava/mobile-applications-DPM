@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.play.services.maps)
     implementation(libs.firebase.storage)
+    implementation(libs.work.runtime)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -66,4 +67,6 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
     implementation("com.sun.mail:android-mail:1.6.7")
     implementation("com.sun.mail:android-activation:1.6.7")
+    implementation("androidx.work:work-runtime:2.9.0")
+    implementation("com.google.guava:guava:31.1-android")
 }
