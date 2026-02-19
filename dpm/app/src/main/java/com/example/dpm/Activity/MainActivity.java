@@ -1,7 +1,5 @@
 package com.example.dpm.Activity;
 
-import static androidx.core.content.ContextCompat.startActivity;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -66,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         drawerLayout = findViewById(R.id.drawerLayout);
         toolbar = findViewById(R.id.materialToolbar);
@@ -220,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
         updateDrawerMenu();
 
     }
+
 
     private void updateDrawerMenu() {
 

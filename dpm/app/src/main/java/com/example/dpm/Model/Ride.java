@@ -29,6 +29,7 @@ public class Ride {
     private String startTime;
     private String endTime;
     private String scheduledAt;
+
     private boolean panicTriggered;
 
     private List<String> linkedPassengerIds;

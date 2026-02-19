@@ -1,7 +1,7 @@
 package com.example.dpm.Model;
 
 public enum RideStatus {
-    REQUESTED,
+    SCHEDULED,
     ACCEPTED,
     STARTED,
     FINISHED,

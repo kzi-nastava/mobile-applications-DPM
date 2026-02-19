@@ -1,5 +1,7 @@
 package com.example.dpm.Fragment;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,16 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dpm.Adapter.PassengerEmailAdapter;
 import com.example.dpm.Adapter.VehicleAdapter;
 
-import com.example.dpm.Model.Driver;
 import com.example.dpm.Model.Notification;
-import com.example.dpm.Model.Passenger;
-import com.example.dpm.Model.PriceConfig;
 import com.example.dpm.Model.Ride;
+import com.example.dpm.Model.RideEstimate;
 import com.example.dpm.Model.RideLocation;
 import com.example.dpm.Model.RidePricingSnapshot;
 import com.example.dpm.Model.RideStatus;
 import com.example.dpm.Model.User;
-import com.example.dpm.Model.UserRole;
 import com.example.dpm.Model.Vehicle;
 import com.example.dpm.Model.VehicleType;
 import com.example.dpm.R;
@@ -36,8 +35,9 @@ import com.example.dpm.Repository.RideEstimateRepository;
 import com.example.dpm.Repository.RideRepository;
 import com.example.dpm.Repository.VehicleRepository;
 import com.example.dpm.Session.UserSession;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.firebase.firestore.DocumentId;
 
 
 import org.osmdroid.config.Configuration;
@@ -49,14 +49,15 @@ import org.osmdroid.views.overlay.Polyline;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -82,8 +83,8 @@ public class HomePageFragment extends Fragment {
     private final Set<Overlay> routeOverlays = new HashSet<>();
     private final Set<Marker> vehicleMarkers = new HashSet<>();
 
-    private com.google.android.material.card.MaterialCardView estimateCard;
-    private android.widget.TextView tvEstimateBody;
+    private MaterialCardView estimateCard;
+    private TextView tvEstimateBody;
     private boolean routeVisible = false;
 
     private LinearLayout passengersSection;
@@ -217,6 +218,10 @@ public class HomePageFragment extends Fragment {
             assignDriverNow();
         });
 
+        btnRideLater.setOnClickListener(v -> {
+            showScheduleDialog();
+        });
+
         btnAddPassenger.setOnClickListener(v -> {
 
             String email = etPassengerEmail.getText().toString().trim();
@@ -330,7 +335,7 @@ public class HomePageFragment extends Fragment {
                         new RideEstimateRepository.Callback(){
 
                             @Override
-                            public void onSuccess(com.example.dpm.Model.RideEstimate e){
+                            public void onSuccess(RideEstimate e){
 
                                 clearRouteOverlays();
 
@@ -412,6 +417,196 @@ public class HomePageFragment extends Fragment {
         });
 
     }
+
+    private void showScheduleDialog() {
+
+        DatePickerDialog datePicker = new DatePickerDialog(
+                requireContext(),
+                (view, year, month, dayOfMonth) -> {
+
+                    TimePickerDialog timePicker = new TimePickerDialog(
+                            requireContext(),
+                            (timeView, hour, minute) -> {
+
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.set(year, month, dayOfMonth, hour, minute);
+
+                                long now = System.currentTimeMillis();
+                                long maxAllowed = now + (5 * 60 * 60 * 1000); // 5 sati u ms
+
+                                long selected = calendar.getTimeInMillis();
+
+                                if (selected <= now) {
+                                    Toast.makeText(getContext(),
+                                            "Select future time",
+                                            Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+                                if (selected > maxAllowed) {
+                                    Toast.makeText(getContext(),
+                                            "Ride can be scheduled only within next 5 hours",
+                                            Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+
+                                createScheduledRide(calendar);
+
+                            },
+                            Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+                            Calendar.getInstance().get(Calendar.MINUTE),
+                            true
+                    );
+
+                    timePicker.show();
+                },
+                Calendar.getInstance().get(Calendar.YEAR),
+                Calendar.getInstance().get(Calendar.MONTH),
+                Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+        );
+
+        datePicker.show();
+    }
+
+    public interface OnVehicleFoundListener {
+        void onVehicleFound(Vehicle vehicle);
+        void onFailure(String message);
+    }
+
+    private void findVehicleForRide(
+            VehicleType vehicleTypeSelected,
+            int numberOfPassengers,
+            boolean petCheck,
+            boolean babyCheck,
+            GeoPoint pickupLocation,
+            OnVehicleFoundListener listener
+    ) {
+
+        vehicleRepository.getAllVehicles(vehicles -> {
+
+            List<Vehicle> selectedVehicles = vehicles.stream()
+                    .filter(v -> v.getType() == vehicleTypeSelected)
+                    .filter(v -> v.getSeats() >= numberOfPassengers + 1)
+                    .filter(v -> !petCheck || v.isPetFriendly())
+                    .filter(v -> !babyCheck || v.isBabyFriendly())
+                    .collect(Collectors.toList());
+
+            if (selectedVehicles.isEmpty()) {
+                listener.onFailure("No vehicles available");
+                return;
+            }
+
+            Vehicle nearest = findNearestDriver(selectedVehicles, pickupLocation);
+
+            if (nearest == null) {
+                listener.onFailure("No drivers nearby");
+                return;
+            }
+
+            listener.onVehicleFound(nearest);
+        });
+    }
+
+    private void createScheduledRide(Calendar calendar) {
+
+        Ride ride = new Ride();
+
+        ride.setPassengerId(loggedInUser.getId());
+        ride.setDistance(currentDistanceKm);
+        ride.setPrice(price);
+        ride.setPricingSnapshot(ridePricingSnapshot);
+
+        vehicleRepository = new VehicleRepository();
+
+        int numberOfPassengers = passengerEmails.size();
+
+        VehicleType vehicleTypeSelected;
+        if(spVehicleType.getSelectedItemPosition() == 1) {
+            vehicleTypeSelected = VehicleType.LUXURY;
+        }
+        else if(spVehicleType.getSelectedItemPosition() == 2) {
+            vehicleTypeSelected = VehicleType.VAN;
+        } else {
+            vehicleTypeSelected = VehicleType.STANDARD;
+        }
+        boolean babyCheck = cbBaby.isChecked();
+        boolean petCheck = cbPet.isChecked();
+
+        ride.setPassengerId(loggedInUser.getId());
+        ride.setDistance(currentDistanceKm);
+        ride.setPrice(price);
+        ride.setPricingSnapshot(ridePricingSnapshot);
+
+        findVehicleForRide(
+                vehicleTypeSelected,
+                numberOfPassengers,
+                petCheck,
+                babyCheck,
+                points.get(0),
+                new OnVehicleFoundListener() {
+
+                    @Override
+                    public void onVehicleFound(Vehicle vehicle) {
+
+                        ride.setDriverId(vehicle.getDriverId());
+                        ride.setVehicleId(vehicle.getId());
+
+                    }
+
+                    @Override
+                    public void onFailure(String message) {
+                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        ride.setStatus(RideStatus.ACCEPTED);
+
+        ride.setPanicTriggered(false);
+
+        SimpleDateFormat sdf =
+                new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+
+        ride.setScheduledAt(sdf.format(calendar.getTime()));
+
+        // Lokacije
+        List<RideLocation> locations = new ArrayList<>();
+
+        for (int i = 0; i < points.size(); i++) {
+
+            if (i == 0) {
+                locations.add(new RideLocation(
+                        startAddress,
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+            else if (i == points.size() - 1) {
+                locations.add(new RideLocation(
+                        endAddress,
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+            else if (stationsAddress != null && stationsAddress.size() >= i) {
+                locations.add(new RideLocation(
+                        stationsAddress.get(i - 1),
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+        }
+
+        ride.setLocations(locations);
+        ride.setLinkedPassengerIds(new ArrayList<>());
+
+        saveRide(ride);
+    }
+
 
     private void loadVehicles() {
         try {
@@ -611,7 +806,7 @@ public class HomePageFragment extends Fragment {
                 }
 
                 if(activeDriverVehicles.isEmpty()) {
-                    showNoDriverNotification("There are currently no active drivers.");
+                    //showNoDriverNotification("There are currently no active drivers.");
                     return;
                 }
 
@@ -707,7 +902,9 @@ public class HomePageFragment extends Fragment {
                 ride,
                 u -> {
                     Toast.makeText(getContext(),"Ride created!",Toast.LENGTH_SHORT).show();
+
                     NotificationRepository notificationRepository = new NotificationRepository();
+
                     Notification n = new Notification();
                     n.setUserId(loggedInUser.getId());
                     n.setMessage("Ride has created.");
@@ -715,8 +912,16 @@ public class HomePageFragment extends Fragment {
                     n.setCreatedAt(System.currentTimeMillis());
                     n.setType("RIDE_CREATED");
                     n.setRideId(ride.getId());
-
                     notificationRepository.createNotification(n);
+
+                    Notification notificationForDriver = new Notification();
+                    notificationForDriver.setUserId(ride.getDriverId());
+                    notificationForDriver.setMessage("You got a new ride!");
+                    notificationForDriver.setRead(false);
+                    notificationForDriver.setCreatedAt(System.currentTimeMillis());
+                    notificationForDriver.setType("RIDE_CREATED");
+                    notificationForDriver.setRideId(ride.getId());
+                    notificationRepository.createNotification(notificationForDriver);
                 },
                 e -> Toast.makeText(getContext(),"Error: "+e.getMessage(),Toast.LENGTH_LONG).show()
         );
