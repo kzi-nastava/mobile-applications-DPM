@@ -142,7 +142,6 @@ public class ChangeDataRequestRepository {
                 .addOnSuccessListener(snapshot -> {
                     List<ChangeDataRequest> list = snapshot.toObjects(ChangeDataRequest.class);
 
-                    // obavezno setuj ID (Firestore toObjects ne radi automatski)
                     for (int i = 0; i < list.size(); i++) {
                         list.get(i).setId(snapshot.getDocuments().get(i).getId());
                     }

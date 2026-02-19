@@ -17,7 +17,6 @@ public class UserSession {
         return instance;
     }
 
-    // Poziva se NAKON uspešnog login-a i Firestore fetch-a
     public void setUser(User user) {
         this.currentUser = user;
     }
@@ -26,7 +25,6 @@ public class UserSession {
         return currentUser;
     }
 
-    // Login stanje uvek proverava FirebaseAuth
     public boolean isLoggedIn() {
         return FirebaseAuth.getInstance().getCurrentUser() != null;
     }

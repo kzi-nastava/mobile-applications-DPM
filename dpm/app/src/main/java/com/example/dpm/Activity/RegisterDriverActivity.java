@@ -145,7 +145,6 @@ public class RegisterDriverActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // ⛔ odmah invalidiramo privremenu lozinku
                     firebaseUser.updatePassword("TEMP_DISABLED_PASSWORD");
 
                     Driver driver = new Driver();

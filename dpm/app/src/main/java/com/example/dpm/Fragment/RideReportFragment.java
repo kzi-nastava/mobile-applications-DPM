@@ -52,12 +52,11 @@ public class RideReportFragment extends Fragment {
         setupChart();
         setupDateRangePicker();
 
-        loadDummyData(); // kasnije Firestore
+        loadDummyData();
 
         return view;
     }
 
-    // 📅 Default: poslednjih 30 dana
     private void initDefaultRange() {
         Calendar end = Calendar.getInstance();
         Calendar start = Calendar.getInstance();
@@ -109,7 +108,6 @@ public class RideReportFragment extends Fragment {
         loadDummyData();
     }
 
-    // 🚧 privremeni podaci
     private void loadDummyData() {
         List<Entry> entries = new ArrayList<>();
 

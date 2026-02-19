@@ -99,7 +99,6 @@ public class RideDetailsFragment extends Fragment {
             });
 
 
-            // NAĐI START I END po orderIndex
             RideLocation first = ride.getLocations().get(0);
             RideLocation last  = ride.getLocations().get(0);
 
@@ -143,8 +142,6 @@ public class RideDetailsFragment extends Fragment {
                         );
                         startMarker.setTitle("Start");
 
-                        // ako imaš ikonicu koristi je
-                        // startMarker.setIcon(getResources().getDrawable(R.drawable.location_green, null));
 
                         // END MARKER
                         org.osmdroid.views.overlay.Marker endMarker =

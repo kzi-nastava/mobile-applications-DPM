@@ -281,16 +281,13 @@ public class ProfileFragment extends Fragment {
         }
 
         try {
-            // 1️⃣ Uri -> Bitmap
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(
                     requireContext().getContentResolver(),
                     imageUri
             );
 
-            // 2️⃣ Bitmap -> Base64 String
             String imageBase64 = ImageUtil.bitmapToBase64(bitmap);
 
-            // 3️⃣ upis u Firestore
             FirebaseProvider.getDb()
                     .collection("users")
                     .document(loggedInUser.getId())
@@ -301,7 +298,6 @@ public class ProfileFragment extends Fragment {
                                 "Profile image updated!",
                                 Toast.LENGTH_SHORT).show();
 
-                        // 4️⃣ ostaje slika u ImageView
                         imgProfile.setImageBitmap(bitmap);
 
                         // update session

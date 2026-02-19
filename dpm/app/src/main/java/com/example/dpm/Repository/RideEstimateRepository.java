@@ -54,10 +54,8 @@ public class RideEstimateRepository {
 
                 ArrayList<GeoPoint> waypoints = new ArrayList<>();
 
-// 1️⃣ START
                 waypoints.add(start);
 
-// 2️⃣ STANICE REDOM
                 for (String stationAddress : stations) {
 
                     List<android.location.Address> list =
@@ -74,7 +72,6 @@ public class RideEstimateRepository {
                     waypoints.add(stationPoint);
                 }
 
-// 3️⃣ DESTINATION
                 waypoints.add(end);
 
 

@@ -61,7 +61,6 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.View
         return users.size();
     }
 
-    // 🔴 DIALOG ZA NAPOMENU
     private void showBlockDialog(Context context, User user) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Block user");
@@ -94,7 +93,6 @@ public class UserAdminAdapter extends RecyclerView.Adapter<UserAdminAdapter.View
         builder.show();
     }
 
-    // 🟢 UNBLOCK
     private void unblockUser(Context context, User user) {
         db.collection("users")
                 .document(user.getId())

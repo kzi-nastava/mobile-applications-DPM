@@ -44,7 +44,6 @@ public class ChangePasswordFragment extends Fragment {
             getActivity().getSupportFragmentManager().popBackStack();
         });
 
-        // Promeni lozinku dugme (samo GUI, vraća na profil)
         btnChangePassword.setOnClickListener(v -> {
             changePassword(view);
         });

@@ -140,7 +140,6 @@ public class VehicleRepository {
                         return;
                     }
 
-                    // 2) ako trimmed nije nađen, probaj raw (ako je različit)
                     if (raw.equals(trimmed)) {
                         Exception e = new Exception("Vehicle document NOT FOUND for id='" + trimmed + "'");
                         Log.e("VEHICLE", e.getMessage());
