@@ -1,5 +1,8 @@
 package com.example.dpm.Adapter;
 
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,12 +10,15 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dpm.Model.Ride;
 import com.example.dpm.Model.RideLocation;
 import com.example.dpm.Model.RideStatus;
 import com.example.dpm.R;
+import com.google.android.material.card.MaterialCardView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -57,8 +63,12 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
         h.tvWhen.setText("Scheduled: " + prettyWhen(r.getScheduledAt()));
         h.tvStatus.setText("Status: " + (r.getStatus() != null ? r.getStatus().name() : "UNKNOWN"));
 
+        boolean hasActiveRide = hasAnyStartedRide();
+        boolean isThisRideActive = (r.getStatus() == RideStatus.STARTED);
+
         boolean canStart = (r.getStatus() == RideStatus.ACCEPTED)
-                && !isBeforeScheduledTime(r.getScheduledAt());
+                && !isBeforeScheduledTime(r.getScheduledAt())
+                && !hasActiveRide;
 
         boolean canFinish = (r.getStatus() == RideStatus.STARTED);
 
@@ -72,6 +82,30 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
         h.btnFinish.setOnClickListener(v -> {
             if (canFinish && listener != null) listener.onFinishRide(r);
         });
+
+        boolean isActive = (r.getStatus() == RideStatus.STARTED);
+
+        if (isActive) {
+            h.card.setCardElevation(12f);
+            h.card.setCardBackgroundColor(ContextCompat.getColor(h.itemView.getContext(), R.color.light_gray_card));
+            h.card.setStrokeWidth(4);
+            h.card.setStrokeColor(ContextCompat.getColor(h.itemView.getContext(), R.color.dark_blue));
+
+            String statusText = "Status: STARTED";
+            SpannableString ss = new SpannableString(statusText);
+            ss.setSpan(new StyleSpan(Typeface.BOLD), 0, statusText.length(), 0);
+            h.tvStatus.setText(ss);
+            h.tvStatus.setTextColor(ContextCompat.getColor(h.itemView.getContext(), R.color.dark_blue));
+
+            h.tvFrom.setTextSize(18);
+        } else {
+            h.card.setCardElevation(3f);
+            h.card.setCardBackgroundColor(ContextCompat.getColor(h.itemView.getContext(), android.R.color.white));
+
+            h.tvStatus.setTextColor(ContextCompat.getColor(h.itemView.getContext(), android.R.color.black));
+            h.tvFrom.setTextSize(16);
+
+        }
     }
 
     @Override
@@ -82,9 +116,10 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
     static class VH extends RecyclerView.ViewHolder {
         TextView tvFrom, tvWhen, tvStatus;
         Button btnStart, btnFinish;
-
+        MaterialCardView card;
         VH(@NonNull View itemView) {
             super(itemView);
+            card = (MaterialCardView) itemView;
             tvFrom = itemView.findViewById(R.id.tvFrom);
             tvWhen = itemView.findViewById(R.id.tvWhen);
             tvStatus = itemView.findViewById(R.id.tvStatus);
@@ -115,5 +150,12 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("Europe/Belgrade"));
         return sdf.format(new Date());
+    }
+
+    private boolean hasAnyStartedRide() {
+        for (Ride x : items) {
+            if (x.getStatus() == RideStatus.STARTED) return true;
+        }
+        return false;
     }
 }

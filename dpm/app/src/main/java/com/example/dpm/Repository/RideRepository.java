@@ -147,14 +147,31 @@ public class RideRepository {
                         return;
                     }
 
-                    db.collection("ride").document(rideId)
-                            .update(
-                                    "status", RideStatus.STARTED,
-                                    "startTime", nowString()
-                            )
-                            .addOnSuccessListener(onSuccess)
-                            .addOnFailureListener(onFailure);
+                    db.collection("ride")
+                            .whereEqualTo("driverId", ride.getDriverId())
+                            .whereEqualTo("status", RideStatus.STARTED)
+                            .get()
+                            .addOnSuccessListener(query -> {
 
+                                if (!query.isEmpty()) {
+                                    if (onFailure != null)
+                                        onFailure.onFailure(
+                                                new Exception("Već imate aktivnu vožnju!")
+                                        );
+                                    return;
+                                }
+
+                                // Ako nema aktivne – dozvoli start
+                                db.collection("ride").document(rideId)
+                                        .update(
+                                                "status", RideStatus.STARTED,
+                                                "startTime", nowString()
+                                        )
+                                        .addOnSuccessListener(onSuccess)
+                                        .addOnFailureListener(onFailure);
+
+                            })
+                            .addOnFailureListener(onFailure);
                 })
                 .addOnFailureListener(onFailure);
     }
@@ -288,7 +305,7 @@ public class RideRepository {
                         // NOTIF SAMO REGISTROVANIM (pošto imamo ID u bazi)
                         Notification n = new Notification();
                         n.setUserId(passengerId);
-                        n.setMessage("Vožnja je prihvaćena. Kliknite za praćenje.");
+                        n.setMessage("Ride has been accepted. Click to follow.");
                         n.setRead(false);
                         n.setCreatedAt(System.currentTimeMillis());
                         n.setType("RIDE_ACCEPTED");
@@ -326,7 +343,7 @@ public class RideRepository {
                         // NOTIF (bez linka)
                         Notification n = new Notification();
                         n.setUserId(passengerId);
-                        n.setMessage("Vožnja je uspešno završena.");
+                        n.setMessage("Ride has finished.");
                         n.setRead(false);
                         n.setCreatedAt(System.currentTimeMillis());
                         n.setType("RIDE_FINISHED");
