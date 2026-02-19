@@ -12,7 +12,7 @@ public class PassengerRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public void addPassenger(Passenger passenger) {
-        passenger.setRole(UserRole.PASSENGER); // OBAVEZNO
+        passenger.setRole(UserRole.PASSENGER);
         db.collection("users")
                 .document(passenger.getId())
                 .set(passenger);
@@ -31,7 +31,7 @@ public class PassengerRepository {
 
                     String role = doc.getString("role");
                     if (!UserRole.PASSENGER.name().equals(role)) {
-                        listener.onSuccess(null); // nije passenger
+                        listener.onSuccess(null);
                         return;
                     }
 
@@ -59,6 +59,36 @@ public class PassengerRepository {
                     if (onSuccess != null) {
                         onSuccess.run();
                     }
+                })
+                .addOnFailureListener(e -> {
+                    if (onFailure != null) {
+                        onFailure.accept(e);
+                    }
+                });
+    }
+
+    public void getPassengerByEmail(String email,
+                                    OnSuccessListener<Passenger> onSuccess,
+                                    java.util.function.Consumer<Exception> onFailure) {
+
+        db.collection("users")
+                .whereEqualTo("email", email)
+                .whereEqualTo("role", UserRole.PASSENGER.name())
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    if (snapshot.isEmpty()) {
+                        onSuccess.onSuccess(null);
+                        return;
+                    }
+
+                    Passenger passenger =
+                            snapshot.getDocuments()
+                                    .get(0)
+                                    .toObject(Passenger.class);
+
+                    onSuccess.onSuccess(passenger);
                 })
                 .addOnFailureListener(e -> {
                     if (onFailure != null) {

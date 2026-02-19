@@ -1,6 +1,7 @@
 package com.example.dpm.Model;
 
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentId;
 
 import java.util.List;
@@ -18,5 +19,11 @@ public class Chat {
     private String id;
 
     private String userId;
-    private List<Message> messages;
+    private String userRole;
+    private String userName;
+
+    private String lastMessage;
+
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 }

@@ -1,0 +1,178 @@
+package com.example.dpm.Adapter;
+
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.dpm.Model.Ride;
+import com.example.dpm.Model.RideLocation;
+import com.example.dpm.Model.RideStatus;
+import com.example.dpm.R;
+import com.google.android.material.card.MaterialCardView;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
+public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.VH> {
+
+    public interface RideActionListener {
+        void onStartRide(Ride ride);
+        void onFinishRide(Ride ride);
+        void onCancelRide(Ride ride);
+
+    }
+    private final List<Ride> items;
+    private final RideActionListener listener;
+    private static final String DATE_FORMAT = "dd.MM.yyyy HH:mm";
+
+    public DriverRidesAdapter(List<Ride> items, RideActionListener listener) {
+        this.items = items;
+        this.listener = listener;
+    }
+
+    @NonNull
+    @Override
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_driver_ride, parent, false);
+        return new VH(v);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull VH h, int position) {
+        Ride r = items.get(position);
+
+        String from = "Unknown";
+        List<RideLocation> locs = r.getLocations();
+        if (locs != null && !locs.isEmpty() && locs.get(0).getAddress() != null) {
+            from = locs.get(0).getAddress();
+        }
+
+        h.tvFrom.setText("From: " + from);
+        h.tvWhen.setText("Scheduled: " + prettyWhen(r.getScheduledAt()));
+        h.tvStatus.setText("Status: " + (r.getStatus() != null ? r.getStatus().name() : "UNKNOWN"));
+
+        boolean hasActiveRide = hasAnyStartedRide();
+        boolean isThisRideActive = (r.getStatus() == RideStatus.STARTED);
+
+        boolean canStart = (r.getStatus() == RideStatus.ACCEPTED)
+                && !isBeforeScheduledTime(r.getScheduledAt())
+                && !hasActiveRide;
+
+        boolean canFinish = (r.getStatus() == RideStatus.STARTED);
+        h.btnStart.setEnabled(canStart);
+        h.btnFinish.setEnabled(canFinish);
+
+        h.btnStart.setOnClickListener(v -> {
+            if (canStart && listener != null) listener.onStartRide(r);
+        });
+
+        h.btnFinish.setOnClickListener(v -> {
+            if (canFinish && listener != null) listener.onFinishRide(r);
+        });
+
+        if(r.getStatus() == RideStatus.STARTED){
+            h.btnCancel.setEnabled(false);
+            h.btnCancel.setAlpha(0.5f);
+        }else{
+            h.btnCancel.setEnabled(true);
+            h.btnCancel.setAlpha(1f);
+        }
+
+        h.btnCancel.setOnClickListener(v -> {
+            if(listener != null) listener.onCancelRide(r);
+        });
+
+
+
+        boolean isActive = (r.getStatus() == RideStatus.STARTED);
+
+        if (isActive) {
+            h.card.setCardElevation(12f);
+            h.card.setCardBackgroundColor(ContextCompat.getColor(h.itemView.getContext(), R.color.light_gray_card));
+            h.card.setStrokeWidth(4);
+            h.card.setStrokeColor(ContextCompat.getColor(h.itemView.getContext(), R.color.dark_blue));
+
+            String statusText = "Status: STARTED";
+            SpannableString ss = new SpannableString(statusText);
+            ss.setSpan(new StyleSpan(Typeface.BOLD), 0, statusText.length(), 0);
+            h.tvStatus.setText(ss);
+            h.tvStatus.setTextColor(ContextCompat.getColor(h.itemView.getContext(), R.color.dark_blue));
+
+            h.tvFrom.setTextSize(18);
+        } else {
+            h.card.setCardElevation(3f);
+            h.card.setCardBackgroundColor(ContextCompat.getColor(h.itemView.getContext(), android.R.color.white));
+
+            h.tvStatus.setTextColor(ContextCompat.getColor(h.itemView.getContext(), android.R.color.black));
+            h.tvFrom.setTextSize(16);
+
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
+    static class VH extends RecyclerView.ViewHolder {
+        TextView tvFrom, tvWhen, tvStatus;
+        MaterialCardView card;
+        Button btnStart, btnFinish, btnCancel;
+
+        VH(@NonNull View itemView) {
+            super(itemView);
+            card = (MaterialCardView) itemView;
+            tvFrom = itemView.findViewById(R.id.tvFrom);
+            tvWhen = itemView.findViewById(R.id.tvWhen);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            btnStart = itemView.findViewById(R.id.btnStart);
+            btnFinish = itemView.findViewById(R.id.btnFinish);
+            btnCancel = itemView.findViewById(R.id.btnCancel);
+        }
+    }
+
+    private static String prettyWhen(String scheduledAt) {
+        if (scheduledAt == null || scheduledAt.trim().isEmpty()) return "N/A";
+        return scheduledAt;
+    }
+
+    private static boolean isBeforeScheduledTime(String scheduledAt) {
+        if (scheduledAt == null || scheduledAt.trim().isEmpty()) return false;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.US);
+            sdf.setTimeZone(TimeZone.getTimeZone("Europe/Belgrade"));
+            Date sched = sdf.parse(scheduledAt);
+            if (sched == null) return false;
+            return new Date().before(sched);
+        } catch (ParseException ex) {
+            return false;
+        }
+    }
+
+    public static String nowIso() {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("Europe/Belgrade"));
+        return sdf.format(new Date());
+    }
+
+    private boolean hasAnyStartedRide() {
+        for (Ride x : items) {
+            if (x.getStatus() == RideStatus.STARTED) return true;
+        }
+        return false;
+    }
+}

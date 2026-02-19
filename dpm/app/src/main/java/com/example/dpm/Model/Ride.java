@@ -20,15 +20,16 @@ public class Ride {
     private String passengerId;
     private String vehicleId;
 
-    private Integer distance;
+    private double distance;
     private double price;
-
+    private RidePricingSnapshot pricingSnapshot;
     private String cancelReason;
     private String cancelledBy;
 
     private String startTime;
     private String endTime;
     private String scheduledAt;
+
     private boolean panicTriggered;
 
     private List<String> linkedPassengerIds;

@@ -1,8 +1,10 @@
 package com.example.dpm.Activity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
@@ -13,10 +15,12 @@ import com.example.dpm.Model.Passenger;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.R;
 import com.example.dpm.Repository.PassengerRepository;
+import com.example.dpm.Util.ImageUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,9 +131,22 @@ public class RegisterActivity extends AppCompatActivity {
                                     passenger.setStreet(streetInput.getText().toString().trim());
                                     passenger.setNumber(numberInput.getText().toString().trim());
 
-                                    passenger.setProfileImageUrl(
-                                            imageSelected ? imageUri.toString() : "DEFAULT"
-                                    );
+                                    String profileImageBase64 = "DEFAULT";
+                                    if (imageSelected && imageUri != null) {
+                                        try {
+                                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+                                                    getContentResolver(),
+                                                    imageUri
+                                            );
+
+                                            profileImageBase64 = ImageUtil.bitmapToBase64(bitmap);
+
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    passenger.setProfileImageUrl(profileImageBase64);
+
 
                                     passenger.setActive(false);   // čeka email verifikaciju
                                     passenger.setBlocked(false);

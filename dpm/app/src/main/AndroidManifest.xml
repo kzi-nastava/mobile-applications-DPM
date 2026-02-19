@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -28,12 +29,29 @@
 
         <activity
             android:name=".Activity.MainActivity"
-            android:exported="false" />
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="myapp"
+                    android:host="ride" />
+            </intent-filter>
+
+        </activity>
 
         <activity android:name=".Activity.LoginActivity" />
         <activity android:name=".Activity.RegisterActivity" />
         <activity android:name=".Activity.ResetPasswordActivity" />
         <activity android:name=".Activity.ActivationPendingActivity" />
+        <activity android:name=".Activity.RegisterDriverActivity" />
+        <activity
+            android:name=".Activity.ChangeDataRequestDetailsActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>
