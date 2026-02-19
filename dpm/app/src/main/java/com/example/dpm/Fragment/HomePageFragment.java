@@ -11,23 +11,33 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.dpm.Adapter.PassengerEmailAdapter;
 import com.example.dpm.Adapter.VehicleAdapter;
 
 import com.example.dpm.Model.Driver;
+import com.example.dpm.Model.Notification;
 import com.example.dpm.Model.Passenger;
+import com.example.dpm.Model.PriceConfig;
 import com.example.dpm.Model.Ride;
 import com.example.dpm.Model.RideLocation;
+import com.example.dpm.Model.RidePricingSnapshot;
 import com.example.dpm.Model.RideStatus;
+import com.example.dpm.Model.User;
 import com.example.dpm.Model.UserRole;
 import com.example.dpm.Model.Vehicle;
+import com.example.dpm.Model.VehicleType;
 import com.example.dpm.R;
 
 import com.example.dpm.Repository.DriverRepository;
+import com.example.dpm.Repository.NotificationRepository;
 import com.example.dpm.Repository.PassengerRepository;
+import com.example.dpm.Repository.PriceRepository;
 import com.example.dpm.Repository.RideEstimateRepository;
 import com.example.dpm.Repository.RideRepository;
 import com.example.dpm.Repository.VehicleRepository;
+import com.example.dpm.Session.UserSession;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.firebase.firestore.DocumentId;
 
 
 import org.osmdroid.config.Configuration;
@@ -37,14 +47,31 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class HomePageFragment extends Fragment {
+
+    private User loggedInUser;
 
     private RecyclerView vehicleListRecycler;
     private VehicleAdapter vehicleAdapter;
@@ -59,6 +86,35 @@ public class HomePageFragment extends Fragment {
     private android.widget.TextView tvEstimateBody;
     private boolean routeVisible = false;
 
+    private LinearLayout passengersSection;
+    private EditText etPassengerEmail;
+    private RecyclerView rvPassengers;
+    private Button btnAddPassenger;
+
+    private List<String> passengerEmails = new ArrayList<>();
+    private PassengerEmailAdapter passengerAdapter;
+
+    private Spinner spVehicleType;
+    private CheckBox cbBaby;
+    private CheckBox cbPet;
+    private TextView tvRidePrice;
+
+    private double currentDistanceKm = 0;
+
+    private long price = 0;
+
+    private RidePricingSnapshot ridePricingSnapshot = null;
+
+    private Button btnRideNow;
+    private Button btnRideLater;
+
+    private List<GeoPoint> points;
+
+    public String startAddress, endAddress;
+
+    public List<String> stationsAddress;
+
+    private PassengerRepository passengerRepository;
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home_page, container, false);
@@ -72,7 +128,18 @@ public class HomePageFragment extends Fragment {
         DriverRepository driverRepo = new DriverRepository();
         RideRepository rideRepo = new RideRepository();
 
-        PassengerRepository passengerRepo = new PassengerRepository();
+//        PassengerRepository passengerRepo = new PassengerRepository();
+        passengerRepository = new PassengerRepository();
+
+        loggedInUser = UserSession.getInstance().getUser();
+
+        points = new ArrayList<>();
+
+        ridePricingSnapshot = new RidePricingSnapshot();
+
+        startAddress = null;
+        endAddress = null;
+        stationsAddress = null;
 
         return view;
 
@@ -116,11 +183,113 @@ public class HomePageFragment extends Fragment {
         rideEstimateRepository = new RideEstimateRepository();
         Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
 
+        passengersSection = view.findViewById(R.id.layoutPassengersSection);
+        etPassengerEmail = view.findViewById(R.id.etPassengerEmail);
+        btnAddPassenger = view.findViewById(R.id.btnAddPassenger);
+        rvPassengers = view.findViewById(R.id.rvPassengers);
+
+        rvPassengers.setLayoutManager(new LinearLayoutManager(getContext()));
+        passengerAdapter = new PassengerEmailAdapter(passengerEmails);
+        rvPassengers.setAdapter(passengerAdapter);
+
+        spVehicleType = view.findViewById(R.id.spVehicleType);
+        cbBaby = view.findViewById(R.id.cbBaby);
+        cbPet = view.findViewById(R.id.cbPet);
+        tvRidePrice = view.findViewById(R.id.tvRidePrice);
+
+        List<String> vehicleTypes = new ArrayList<>();
+        vehicleTypes.add("STANDARD");
+        vehicleTypes.add("LUXURY");
+        vehicleTypes.add("VAN");
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_spinner_item,
+                        vehicleTypes);
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spVehicleType.setAdapter(adapter);
+
+        btnRideNow = view.findViewById(R.id.btnRideNow);
+        btnRideLater = view.findViewById(R.id.btnRideLater);
+
+        btnRideNow.setOnClickListener(v -> {
+            assignDriverNow();
+        });
+
+        btnAddPassenger.setOnClickListener(v -> {
+
+            String email = etPassengerEmail.getText().toString().trim();
+
+            if(email.isEmpty()){
+                etPassengerEmail.setError("Enter email");
+                return;
+            }
+
+            if(passengerEmails.contains(email)){
+                etPassengerEmail.setError("Already added");
+                return;
+            }
+
+            PassengerRepository passengerRepo = new PassengerRepository();
+
+            passengerRepo.getPassengerByEmail(
+                    email,
+                    passenger -> {
+
+                        if (passenger == null) {
+                            etPassengerEmail.setError("Passenger not found");
+                            return;
+                        }
+
+                        if (passenger.getId().equals(loggedInUser.getId())) {
+                            etPassengerEmail.setError("You cannot add yourself");
+                            return;
+                        }
+
+                        if (passengerEmails.contains(email)) {
+                            etPassengerEmail.setError("Already added");
+                            return;
+                        }
+
+                        passengerEmails.add(email);
+                        passengerAdapter.notifyDataSetChanged();
+                        etPassengerEmail.setText("");
+                    },
+                    e -> etPassengerEmail.setError("Error checking passenger")
+            );
+
+            etPassengerEmail.setText("");
+        });
+
+        spVehicleType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updatePrice();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+
         ExtendedFloatingActionButton fab = view.findViewById(R.id.fabEstimate);
         ImageButton close = view.findViewById(R.id.btnCloseEstimate);
         close.setOnClickListener(v -> {
             clearRouteOverlays();
             estimateCard.setVisibility(View.GONE);
+
+            passengersSection.setVisibility(View.GONE);
+            passengerEmails.clear();
+            passengerAdapter.notifyDataSetChanged();
+
+            vehicleListRecycler.setVisibility(View.VISIBLE);
+
+            points = new ArrayList<>();
+            startAddress = null;
+            endAddress = null;
+            stationsAddress = null;
+
             routeVisible = false;
             map.invalidate();
         });
@@ -130,15 +299,34 @@ public class HomePageFragment extends Fragment {
             if(routeVisible){
                 clearRouteOverlays();
                 estimateCard.setVisibility(View.GONE);
+
+                passengersSection.setVisibility(View.GONE);
+                passengerEmails.clear();
+                passengerAdapter.notifyDataSetChanged();
+
+                vehicleListRecycler.setVisibility(View.VISIBLE);
+
+                points = new ArrayList<>();
+                startAddress = null;
+                endAddress = null;
+                stationsAddress = null;
+
                 routeVisible = false;
                 map.invalidate();
-                return;
             }
 
             // inače otvori dialog za procenu
-            new RideEstimateDialogFragment((from,to)->{
+            new RideEstimateDialogFragment((from, to, stations) -> {
 
-                rideEstimateRepository.estimate(requireContext(), from, to,
+                startAddress = from;
+                endAddress = to;
+                stationsAddress = stations;
+
+                rideEstimateRepository.estimate(
+                        requireContext(),
+                        from,
+                        to,
+                        stations,
                         new RideEstimateRepository.Callback(){
 
                             @Override
@@ -152,6 +340,27 @@ public class HomePageFragment extends Fragment {
                                 start.setTitle("Start");
                                 start.setSnippet("Ride starting point");
                                 start.showInfoWindow();
+
+                                // Stanice
+                                int counter = 1;
+
+                                for (GeoPoint p : e.getWaypoints()) {
+                                    points.add(p);
+                                    // preskoči prvi (start) i poslednji (dest)
+                                    if (p.equals(e.getFromPoint()) || p.equals(e.getToPoint()))
+                                        continue;
+
+                                    Marker stationMarker = new Marker(map);
+                                    stationMarker.setPosition(p);
+                                    stationMarker.setTitle("Stop " + counter);
+                                    stationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
+                                    map.getOverlays().add(stationMarker);
+                                    routeOverlays.add(stationMarker);
+
+                                    counter++;
+                                }
+
 
                                 Marker end = new Marker(map);
                                 end.setPosition(e.getToPoint());
@@ -181,6 +390,15 @@ public class HomePageFragment extends Fragment {
 
                                 routeVisible = true;
                                 map.invalidate();
+
+                                if(loggedInUser != null) {
+                                    passengersSection.setVisibility(View.VISIBLE);
+                                    vehicleListRecycler.setVisibility(View.GONE);
+                                }
+
+                                currentDistanceKm = e.getDistanceKm();
+                                updatePrice();
+
                             }
 
                             @Override
@@ -236,6 +454,367 @@ public class HomePageFragment extends Fragment {
         }
 
     }
+
+    private void updatePrice() {
+
+        if(currentDistanceKm == 0){
+            tvRidePrice.setText("Price: 0 RSD");
+            return;
+        }
+
+        PriceRepository priceRepository = new PriceRepository();
+
+        priceRepository.getCurrentPricing(priceConfig -> {
+
+            if(priceConfig == null){
+                tvRidePrice.setText("Price: 0 RSD");
+                return;
+            }
+
+            price = 0;
+
+            String type = spVehicleType.getSelectedItem().toString();
+            ridePricingSnapshot.setVehicleType(VehicleType.valueOf(VehicleType.class, type));
+
+
+            Long base = priceConfig.getPricePerVehicleType().get(type);
+            if(base != null){
+                price += base;
+                ridePricingSnapshot.setPricePerType(base);
+            }
+
+            price += Math.round(currentDistanceKm * priceConfig.getPricePerKm());
+            ridePricingSnapshot.setPricePerKm(priceConfig.getPricePerKm());
+
+            tvRidePrice.setText("Price: " + price + " RSD");
+        });
+    }
+
+    private void proceedWithVehicleSelection(List<Vehicle> freeVehicles){
+
+        if(freeVehicles.isEmpty()){
+            showNoDriverNotification("There are currently no active drivers.");
+            return;
+        }
+
+        List<Vehicle> nonBusyVehicles = new ArrayList<>();
+        for(Vehicle v: freeVehicles){
+            if(!v.isBusy()) nonBusyVehicles.add(v);
+        }
+
+        List<Vehicle> candidates =
+                nonBusyVehicles.isEmpty() ? freeVehicles : nonBusyVehicles;
+
+        if(points == null || points.isEmpty()){
+            Toast.makeText(getContext(),"Problem with start point.",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        GeoPoint start = points.get(0);
+        Vehicle selected = findNearestDriver(candidates, start);
+
+        if(selected != null) createRide(selected);
+    }
+
+    private void checkFreeVehicles(List<Vehicle> activeDriverVehicles){
+
+        RideRepository rideRepository = new RideRepository();
+
+        List<Vehicle> freeVehicles = new ArrayList<>();
+        AtomicInteger checked = new AtomicInteger(0);
+
+        for (Vehicle v : activeDriverVehicles) {
+
+            if (v.isBusy()) {
+
+                rideRepository.hasScheduledRideInNext5Hours(v.getDriverId(), check -> {
+
+                    if (!check) freeVehicles.add(v);
+
+                    if (checked.incrementAndGet() == activeDriverVehicles.size()) {
+                        proceedWithVehicleSelection(freeVehicles);
+                    }
+                });
+
+            } else {
+
+                freeVehicles.add(v);
+
+                if (checked.incrementAndGet() == activeDriverVehicles.size()) {
+                    proceedWithVehicleSelection(freeVehicles);
+                }
+            }
+        }
+    }
+
+    private void assignDriverNow() {
+        DriverRepository driverRepository = new DriverRepository();
+        RideRepository rideRepository = new RideRepository();
+        vehicleRepository = new VehicleRepository();
+
+        int numberOfPassengers = passengerEmails.size();
+
+        VehicleType vehicleTypeSelected;
+        if(spVehicleType.getSelectedItemPosition() == 1) {
+            vehicleTypeSelected = VehicleType.LUXURY;
+        }
+        else if(spVehicleType.getSelectedItemPosition() == 2) {
+            vehicleTypeSelected = VehicleType.VAN;
+        } else {
+            vehicleTypeSelected = VehicleType.STANDARD;
+        }
+        boolean babyCheck = cbBaby.isChecked();
+        boolean petCheck = cbPet.isChecked();
+
+        vehicleRepository.getAllVehicles(vehicles -> {
+            List<Vehicle> selectedVehicles = new ArrayList<>();
+
+            for (Vehicle v : vehicles) {
+                if(v.isPetFriendly() == petCheck) {
+                    if(v.isBabyFriendly() == babyCheck) {
+                        if(v.getSeats() >= numberOfPassengers + 1) {
+                            if(v.getType().toString().equals(vehicleTypeSelected.toString())) {
+                                selectedVehicles.add(v);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(selectedVehicles.isEmpty()) {
+                Toast.makeText(getContext(), "There is no such vehicle.", Toast.LENGTH_SHORT);
+            }
+            else {
+
+                List<Vehicle> activeDriverVehicles = new ArrayList<>();
+                AtomicInteger checked = new AtomicInteger(0);
+
+                for (Vehicle v : selectedVehicles) {
+
+                    driverRepository.getDriverById(v.getDriverId(), driver -> {
+
+                        if (driver != null && driver.isActive()) {
+                            activeDriverVehicles.add(v);
+                        }
+
+                        if (checked.incrementAndGet() == selectedVehicles.size()) {
+
+                            if (activeDriverVehicles.isEmpty()) {
+                                showNoDriverNotification("There are currently no active drivers.");
+                                return;
+                            }
+
+                            checkFreeVehicles(activeDriverVehicles);
+                        }
+
+                    });
+                }
+
+                if(activeDriverVehicles.isEmpty()) {
+                    showNoDriverNotification("There are currently no active drivers.");
+                    return;
+                }
+
+                List<Vehicle> freeVehicles = new ArrayList<>();
+                for(Vehicle v: activeDriverVehicles) {
+                    if(v.isBusy()) {
+                        rideRepository.hasScheduledRideInNext5Hours(v.getDriverId(), check -> {
+                            if(!check) {
+                                freeVehicles.add(v);
+                            }
+                        });
+                    }
+                    else {
+                        freeVehicles.add(v);
+                    }
+                }
+
+
+                if(!freeVehicles.isEmpty()) {
+                    List<Vehicle> nonBusyVehicles = new ArrayList<>();
+                    for(Vehicle v: freeVehicles) {
+                        if(!v.isBusy()) {
+                            nonBusyVehicles.add(v);
+                        }
+                    }
+                    if(nonBusyVehicles.isEmpty()) {
+                        if (!points.isEmpty()) {
+                            GeoPoint start = points.get(0);
+                            Vehicle selected = findNearestDriver(freeVehicles, start);
+                            createRide(selected);
+                        }
+                        else {
+                            Toast.makeText(getContext(), "Problem with start point.", Toast.LENGTH_SHORT);
+                        }
+                    }
+                    else {
+                        if (!points.isEmpty()) {
+                            GeoPoint start = points.get(0);
+                            Vehicle selected = findNearestDriver(nonBusyVehicles, start);
+                            createRide(selected);
+                        }
+                        else {
+                            Toast.makeText(getContext(), "Problem with start point.", Toast.LENGTH_SHORT);
+                        }
+                    }
+                }
+                else {
+                    showNoDriverNotification("There are currently no active drivers.");
+                }
+
+            }
+        });
+
+    }
+
+    public void showNoDriverNotification(String message) {
+        NotificationRepository notificationRepository = new NotificationRepository();
+
+        Notification n = new Notification();
+        n.setUserId(loggedInUser.getId());
+        n.setMessage(message);
+        n.setRead(false);
+        n.setCreatedAt(System.currentTimeMillis());
+        n.setType(null);
+        n.setRideId(null);
+
+        notificationRepository.createNotification(n);
+    }
+
+    private Vehicle findNearestDriver(List<Vehicle> vehicles, GeoPoint startPoint){
+
+        if(vehicles.isEmpty()) return null;
+
+        Vehicle nearest = null;
+
+        double minDistance = Double.MAX_VALUE;
+
+        for(Vehicle v: vehicles){
+
+            double distance = startPoint.distanceToAsDouble(v.getPosition());
+
+            if(distance < minDistance){
+                minDistance = distance;
+                nearest = v;
+            }
+        }
+
+        return nearest;
+    }
+    private void saveRide(Ride ride){
+        RideRepository repo = new RideRepository();
+        repo.addRide(
+                ride,
+                u -> {
+                    Toast.makeText(getContext(),"Ride created!",Toast.LENGTH_SHORT).show();
+                    NotificationRepository notificationRepository = new NotificationRepository();
+                    Notification n = new Notification();
+                    n.setUserId(loggedInUser.getId());
+                    n.setMessage("Ride has created.");
+                    n.setRead(false);
+                    n.setCreatedAt(System.currentTimeMillis());
+                    n.setType("RIDE_CREATED");
+                    n.setRideId(ride.getId());
+
+                    notificationRepository.createNotification(n);
+                },
+                e -> Toast.makeText(getContext(),"Error: "+e.getMessage(),Toast.LENGTH_LONG).show()
+        );
+    }
+
+
+    public void createRide(Vehicle vehicle) {
+
+        Ride ride = new Ride();
+
+        ride.setDriverId(vehicle.getDriverId());
+        ride.setVehicleId(vehicle.getId());
+        ride.setDistance(currentDistanceKm);
+        ride.setPrice(price);
+        ride.setPricingSnapshot(ridePricingSnapshot);
+        ride.setCancelReason(null);
+        ride.setCancelledBy(null);
+        ride.setStartTime(null);
+        ride.setEndTime(null);
+
+        // GLAVNI PASSENGER
+        ride.setPassengerId(loggedInUser.getId());
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+        ride.setScheduledAt(sdf.format(new Date()));
+
+        ride.setPanicTriggered(false);
+        ride.setStatus(RideStatus.ACCEPTED);
+
+        // ---------- LOCATIONS ----------
+        List<RideLocation> locations = new ArrayList<>();
+
+        for (int i = 0; i < points.size(); i++) {
+
+            if (i == 0) {
+                locations.add(new RideLocation(
+                        startAddress,
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+            else if (i == points.size() - 1) {
+                locations.add(new RideLocation(
+                        endAddress,
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+            else if (stationsAddress != null && stationsAddress.size() >= i) {
+                locations.add(new RideLocation(
+                        stationsAddress.get(i - 1),
+                        points.get(i).getLatitude(),
+                        points.get(i).getLongitude(),
+                        i
+                ));
+            }
+        }
+
+        ride.setLocations(locations);
+
+        // ---------- LINKED PASSENGERS (ASYNC) ----------
+        if (passengerEmails.isEmpty()) {
+
+            ride.setLinkedPassengerIds(new ArrayList<>());
+            saveRide(ride);
+            return;
+        }
+
+        List<String> ids = new ArrayList<>();
+        AtomicInteger remaining = new AtomicInteger(passengerEmails.size());
+
+        for (String email : passengerEmails) {
+
+            passengerRepository.getPassengerByEmail(email, passenger -> {
+
+                if (passenger != null) {
+                    ids.add(passenger.getId());
+                }
+
+                if (remaining.decrementAndGet() == 0) {
+                    ride.setLinkedPassengerIds(ids);
+                    saveRide(ride);   // SNIMI TEK SADA
+                }
+
+            }, e -> {
+
+                if (remaining.decrementAndGet() == 0) {
+                    ride.setLinkedPassengerIds(ids);
+                    saveRide(ride);
+                }
+
+            });
+        }
+    }
+
+
 
     @Override
     public void onResume() {

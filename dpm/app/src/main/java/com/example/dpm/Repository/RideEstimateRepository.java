@@ -23,8 +23,12 @@ public class RideEstimateRepository {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public void estimate(Context ctx, String from, String to, Callback cb){
-
+    public void estimate(Context ctx,
+                         String from,
+                         String to,
+                         List<String> stations,
+                         Callback cb)
+    {
         executor.execute(() -> {
             try {
 
@@ -49,17 +53,47 @@ public class RideEstimateRepository {
                         toList.get(0).getLongitude());
 
                 ArrayList<GeoPoint> waypoints = new ArrayList<>();
+
+// 1️⃣ START
                 waypoints.add(start);
+
+// 2️⃣ STANICE REDOM
+                for (String stationAddress : stations) {
+
+                    List<android.location.Address> list =
+                            geo.getFromLocationName(stationAddress, 1);
+
+                    if (list == null || list.isEmpty())
+                        throw new Exception("Stanica nije pronađena: " + stationAddress);
+
+                    GeoPoint stationPoint = new GeoPoint(
+                            list.get(0).getLatitude(),
+                            list.get(0).getLongitude()
+                    );
+
+                    waypoints.add(stationPoint);
+                }
+
+// 3️⃣ DESTINATION
                 waypoints.add(end);
 
-                OSRMRoadManager rm = new OSRMRoadManager(ctx,"UBERIO");
+
+                OSRMRoadManager rm = new OSRMRoadManager(ctx, ctx.getPackageName());
+                rm.setMean(OSRMRoadManager.MEAN_BY_CAR);
+
                 Road road = rm.getRoad(waypoints);
 
+                if (road == null || road.mStatus != Road.STATUS_OK) {
+                    throw new Exception("Routing failed. Status = " +
+                            (road != null ? road.mStatus : "null"));
+                }
+
                 double km = road.mLength;
-                double min = road.mDuration/60.0;
+                double min = road.mDuration / 60.0;
+
 
                 RideEstimate result =
-                        new RideEstimate(start,end,km,min,road.mRouteHigh);
+                        new RideEstimate(start, end, km, min, road.mRouteHigh, waypoints);
 
                 new android.os.Handler(ctx.getMainLooper())
                         .post(() -> cb.onSuccess(result));

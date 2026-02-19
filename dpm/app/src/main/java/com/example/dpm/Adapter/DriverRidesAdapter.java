@@ -32,6 +32,8 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
     public interface RideActionListener {
         void onStartRide(Ride ride);
         void onFinishRide(Ride ride);
+        void onCancelRide(Ride ride);
+
     }
     private final List<Ride> items;
     private final RideActionListener listener;
@@ -71,7 +73,6 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
                 && !hasActiveRide;
 
         boolean canFinish = (r.getStatus() == RideStatus.STARTED);
-
         h.btnStart.setEnabled(canStart);
         h.btnFinish.setEnabled(canFinish);
 
@@ -82,6 +83,20 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
         h.btnFinish.setOnClickListener(v -> {
             if (canFinish && listener != null) listener.onFinishRide(r);
         });
+
+        if(r.getStatus() == RideStatus.STARTED){
+            h.btnCancel.setEnabled(false);
+            h.btnCancel.setAlpha(0.5f);
+        }else{
+            h.btnCancel.setEnabled(true);
+            h.btnCancel.setAlpha(1f);
+        }
+
+        h.btnCancel.setOnClickListener(v -> {
+            if(listener != null) listener.onCancelRide(r);
+        });
+
+
 
         boolean isActive = (r.getStatus() == RideStatus.STARTED);
 
@@ -115,8 +130,9 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvFrom, tvWhen, tvStatus;
-        Button btnStart, btnFinish;
         MaterialCardView card;
+        Button btnStart, btnFinish, btnCancel;
+
         VH(@NonNull View itemView) {
             super(itemView);
             card = (MaterialCardView) itemView;
@@ -125,6 +141,7 @@ public class DriverRidesAdapter extends RecyclerView.Adapter<DriverRidesAdapter.
             tvStatus = itemView.findViewById(R.id.tvStatus);
             btnStart = itemView.findViewById(R.id.btnStart);
             btnFinish = itemView.findViewById(R.id.btnFinish);
+            btnCancel = itemView.findViewById(R.id.btnCancel);
         }
     }
 
