@@ -15,26 +15,34 @@
         android:padding="14dp">
 
         <TextView
-            android:id="@+id/tvFrom"
+            android:id="@+id/tvRoute"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="From: ..."
             android:textStyle="bold"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:text="Route"/>
 
         <TextView
             android:id="@+id/tvWhen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Scheduled: ..."
-            android:layout_marginTop="6dp"/>
+            android:layout_marginTop="6dp"
+            android:text="Scheduled: -"/>
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Status: ..."
-            android:layout_marginTop="6dp"/>
+            android:layout_marginTop="6dp"
+            android:text="Status: -"/>
+
+        <TextView
+            android:id="@+id/tvCancelInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text=""
+            android:visibility="gone"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -43,29 +51,20 @@
             android:layout_marginTop="12dp">
 
             <Button
-                android:id="@+id/btnStart"
+                android:id="@+id/btnTrack"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:backgroundTint="@color/orange"
                 android:layout_weight="1"
-                android:text="START"/>
-
-            <Button
-                android:id="@+id/btnFinish"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
                 app:backgroundTint="@color/light_blue"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:text="FINISH"/>
+                android:text="TRACK"/>
 
             <Button
                 android:id="@+id/btnCancel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:backgroundTint="@color/red"
                 android:layout_weight="1"
                 android:layout_marginStart="10dp"
+                app:backgroundTint="@color/red"
                 android:text="CANCEL"/>
         </LinearLayout>
 

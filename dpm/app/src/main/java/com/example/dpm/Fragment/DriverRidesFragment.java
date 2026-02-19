@@ -1,9 +1,11 @@
 package com.example.dpm.Fragment;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -99,4 +101,46 @@ public class DriverRidesFragment extends Fragment implements DriverRidesAdapter.
                 err -> Toast.makeText(requireContext(), err.getMessage(), Toast.LENGTH_SHORT).show()
         );
     }
+
+    @Override
+    public void onCancelRide(Ride ride){
+
+        if(ride.getStatus() == RideStatus.STARTED){
+            Toast.makeText(requireContext(),
+                    "Cannot cancel after ride started",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        EditText input = new EditText(requireContext());
+        input.setHint("Enter cancel reason");
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Cancel ride")
+                .setView(input)
+                .setPositiveButton("Cancel ride", (d,w)->{
+
+                    String reason = input.getText().toString().trim();
+
+                    if(reason.isEmpty()){
+                        Toast.makeText(requireContext(),
+                                "Reason required",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    rideRepository.cancelRideByDriver(
+                            ride.getId(),
+                            reason,
+                            unused -> Toast.makeText(requireContext(),
+                                    "Ride cancelled", Toast.LENGTH_SHORT).show(),
+                            err -> Toast.makeText(requireContext(),
+                                    err.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+
+                })
+                .setNegativeButton("Back",null)
+                .show();
+    }
+
 }

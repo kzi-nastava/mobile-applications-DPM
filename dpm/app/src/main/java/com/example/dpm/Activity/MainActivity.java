@@ -21,6 +21,7 @@ import com.example.dpm.Fragment.DriveHistoryFragment;
 import com.example.dpm.Fragment.DriverRidesFragment;
 import com.example.dpm.Fragment.HomePageFragment;
 import com.example.dpm.Fragment.NotificationsFragment;
+import com.example.dpm.Fragment.PassengerRidesFragment;
 import com.example.dpm.Fragment.PricingFragment;
 import com.example.dpm.Fragment.ProfileFragment;
 import com.example.dpm.Fragment.RatingDialogFragment;
@@ -169,9 +170,16 @@ public class MainActivity extends AppCompatActivity {
                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new AdminChatListFragment()).commit();
             }
             if (item.getItemId() == R.id.nav_my_rides) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new DriverRidesFragment()).commit();
+                if (session.getUser() != null && session.getUser().getRole() == UserRole.DRIVER) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.frameLayout, new DriverRidesFragment())
+                            .commit();
+                } else if (session.getUser() != null && session.getUser().getRole() == UserRole.PASSENGER) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.frameLayout, new PassengerRidesFragment())
+                            .commit();
+                }
             }
-
             if (item.getItemId() == R.id.nav_logout) {
 
                 FirebaseAuth.getInstance().signOut();
@@ -251,6 +259,12 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.nav_support_chat).setVisible(true);
             }
         }
+
+        if (loggedIn && session.getUser() != null &&
+                (session.getUser().getRole() == UserRole.DRIVER || session.getUser().getRole() == UserRole.PASSENGER)) {
+            menu.findItem(R.id.nav_my_rides).setVisible(true);
+        }
+
     }
 
     private void handleDeepLink(Intent intent) {
